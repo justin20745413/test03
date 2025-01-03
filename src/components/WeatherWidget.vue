@@ -1,10 +1,16 @@
 <template>
     <div class="weather-container">
         <div class="weather-card">
-            <h2 class="weather-title">天氣資訊</h2>
+            <div class="weather-header">
+                <h2 class="weather-title">天氣資訊</h2>
+                <select v-model="selectedCity" class="city-select">
+                    <option v-for="city in TAIWAN_CITIES" :key="city.name" :value="city">
+                        {{ city.name }}
+                    </option>
+                </select>
+            </div>
             <div v-if="isLoading" class="loading">
-                <q-spinner color="primary" size="3em" />
-                <span class="q-ml-sm">載入中...</span>
+                <div class="water"></div>
             </div>
             <div v-else-if="weatherData" class="weather-content">
                 <div class="current-weather">
@@ -25,20 +31,20 @@
                             <span>{{ weatherData.description }}</span>
                         </div>
                         <div class="detail-item">
-                            <i class="fas fa-thermometer-half"></i>
+                            <q-icon name="device_thermostat"></q-icon>
                             <span>體感溫度 {{ weatherData.feelsLike }}°C</span>
                         </div>
                         <div class="detail-item">
-                            <i class="fas fa-tint"></i>
+                            <q-icon name="water_drop"></q-icon>
                             <span>濕度 {{ weatherData.humidity }}%</span>
                         </div>
                         <div class="detail-item">
-                            <i class="fas fa-wind"></i>
+                            <q-icon name="air"></q-icon>
                             <span>風速 {{ weatherData.windSpeed }} m/s</span>
                         </div>
                     </div>
                 </div>
-                <WeatherChart :latitude="TAIWAN_LAT" :longitude="TAIWAN_LON" />
+                <WeatherChart :latitude="selectedCity.lat" :longitude="selectedCity.lon" />
             </div>
             <div v-else class="error">
                 <i class="fas fa-exclamation-circle"></i>
@@ -49,55 +55,27 @@
 </template>
 
 <script setup lang="ts">
-import { ref, onMounted } from 'vue'
+import { ref, onMounted, watch } from 'vue'
 import WeatherChart from './WeatherChart.vue'
+import { TAIWAN_CITIES } from '@/constants/cities'
+import { WEATHER_MAP } from '@/constants/weatherCodes'
+import type { WeatherData } from '@/types/weather'
+import type { City } from '@/constants/cities'
+import type { WeatherInfo } from '@/constants/weatherCodes'
 
-const CITY = 'Taipei'
-const TAIWAN_LAT = 25.033
-const TAIWAN_LON = 121.5654
-
-interface WeatherData {
-    city: string
-    currentTemp: number
-    description: string
-    humidity: number
-    icon: string
-    windSpeed: number
-    feelsLike: number
-}
-
+const selectedCity = ref<City>(TAIWAN_CITIES[0])
 const isLoading = ref(true)
 const weatherData = ref<WeatherData | null>(null)
 
 // 根據天氣代碼獲取對應的描述和圖標
-const getWeatherInfo = (weatherCode: number) => {
-    const weatherMap: { [key: number]: { description: string; icon: string } } = {
-        0: { description: '晴天', icon: '01d' },
-        1: { description: '晴時多雲', icon: '02d' },
-        2: { description: '多雲', icon: '03d' },
-        3: { description: '陰天', icon: '04d' },
-        45: { description: '霧', icon: '50d' },
-        48: { description: '霧凇', icon: '50d' },
-        51: { description: '毛毛雨', icon: '09d' },
-        53: { description: '小雨', icon: '09d' },
-        55: { description: '中雨', icon: '09d' },
-        61: { description: '小雨', icon: '10d' },
-        63: { description: '中雨', icon: '10d' },
-        65: { description: '大雨', icon: '10d' },
-        71: { description: '小雪', icon: '13d' },
-        73: { description: '中雪', icon: '13d' },
-        75: { description: '大雪', icon: '13d' },
-        95: { description: '雷雨', icon: '11d' },
-        96: { description: '雷陣雨伴有冰雹', icon: '11d' },
-        99: { description: '大雷雨伴有冰雹', icon: '11d' }
-    }
-    return weatherMap[weatherCode] || { description: '未知天氣', icon: '03d' }
+const getWeatherInfo = (weatherCode: number): WeatherInfo => {
+    return WEATHER_MAP[weatherCode] || { description: '未知天氣', icon: '03d' }
 }
 
 const fetchWeatherData = async () => {
     try {
         const response = await fetch(
-            `https://api.open-meteo.com/v1/forecast?latitude=${TAIWAN_LAT}&longitude=${TAIWAN_LON}&current=temperature_2m,relative_humidity_2m,apparent_temperature,weather_code,wind_speed_10m&timezone=Asia%2FTaipei`
+            `https://api.open-meteo.com/v1/forecast?latitude=${selectedCity.value.lat}&longitude=${selectedCity.value.lon}&current=temperature_2m,relative_humidity_2m,apparent_temperature,weather_code,wind_speed_10m&timezone=Asia%2FTaipei`
         )
 
         if (!response.ok) {
@@ -109,7 +87,7 @@ const fetchWeatherData = async () => {
         const weatherInfo = getWeatherInfo(current.weather_code)
 
         weatherData.value = {
-            city: CITY,
+            city: selectedCity.value.name,
             currentTemp: Math.round(current.temperature_2m),
             description: weatherInfo.description,
             humidity: current.relative_humidity_2m,
@@ -125,6 +103,12 @@ const fetchWeatherData = async () => {
         weatherData.value = null
     }
 }
+
+// 監聽城市變化
+watch(selectedCity, () => {
+    isLoading.value = true
+    fetchWeatherData()
+})
 
 onMounted(() => {
     fetchWeatherData()
@@ -163,7 +147,7 @@ onMounted(() => {
     align-items: center;
     margin-bottom: 2rem;
     padding: 1.5rem;
-    background: linear-gradient(135deg, #6ea5ff 0%, #4a90e2 100%);
+    background: linear-gradient(135deg, var(--q-primary) 0%, var(--q-primary) 100%);
     border-radius: 12px;
     color: white;
 }
@@ -273,5 +257,77 @@ onMounted(() => {
     padding: 0.5rem 1rem;
     border-radius: 8px;
     backdrop-filter: blur(5px);
+}
+/* water:  */
+.water {
+    --r1: 154%;
+    --r2: 68.5%;
+    width: 60px;
+    aspect-ratio: 1;
+    border-radius: 50%;
+    background: radial-gradient(var(--r1) var(--r2) at top, #0000 79.5%, #269af2 80%),
+        radial-gradient(var(--r1) var(--r2) at bottom, #269af2 79.5%, #0000 80%),
+        radial-gradient(var(--r1) var(--r2) at top, #0000 79.5%, #269af2 80%), #ccc;
+    background-size: 50.5% 220%;
+    background-position:
+        -100% 0%,
+        0% 0%,
+        100% 0%;
+    background-repeat: no-repeat;
+    animation: l9 2s infinite linear;
+    cursor: pointer;
+    transition: transform 0.3s ease;
+
+    &:hover {
+        transform: scale(1.1);
+    }
+}
+@keyframes l9 {
+    33% {
+        background-position:
+            0% 33%,
+            100% 33%,
+            200% 33%;
+    }
+    66% {
+        background-position:
+            -100% 66%,
+            0% 66%,
+            100% 66%;
+    }
+    100% {
+        background-position:
+            0% 100%,
+            100% 100%,
+            200% 100%;
+    }
+}
+
+.weather-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 2rem;
+}
+
+.city-select {
+    padding: 0.5rem 1rem;
+    border-radius: 8px;
+    border: 1px solid #e0e0e0;
+    background-color: white;
+    font-size: 1rem;
+    color: #2c3e50;
+    cursor: pointer;
+    transition: all 0.3s ease;
+}
+
+.city-select:hover {
+    border-color: #4a90e2;
+}
+
+.city-select:focus {
+    outline: none;
+    border-color: #4a90e2;
+    box-shadow: 0 0 0 2px rgba(74, 144, 226, 0.2);
 }
 </style>

@@ -1,9 +1,6 @@
 <template>
     <q-layout view="hHh lpR fFf">
-        <q-header
-            elevated
-            :class="[isDark ? 'bg-dark' : `bg-${currentTheme.value}`, 'header-shadow']"
-        >
+        <q-header elevated :class="[isDark ? 'bg-dark' : `bg-${currentTheme}`, 'header-shadow']">
             <q-toolbar class="q-px-lg">
                 <q-btn flat dense round icon="menu" @click="toggleLeftDrawer" />
 

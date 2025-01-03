@@ -15,9 +15,7 @@
                         <DraggableList />
                     </q-card-section>
                 </q-card>
-            </div>
-            <div class="col-12 col-md-6">
-                <q-card flat bordered class="flex flex-center">
+                <q-card flat bordered class="flex flex-center tw-mt-4">
                     <div>
                         <q-card-section>
                             <div class="text-h6 q-mb-md">Progress Image</div>
@@ -25,11 +23,7 @@
                         </q-card-section>
                     </div>
                 </q-card>
-            </div>
-
-            <!-- Image Cropper Section -->
-            <div class="col-12 col-md-6">
-                <q-card flat bordered>
+                <q-card flat bordered class="tw-mt-4">
                     <q-card-section>
                         <div class="text-h6 q-mb-md">Image Editor</div>
                         <ImageCropper />
@@ -39,10 +33,16 @@
 
             <!-- 添加天氣組件 -->
             <div class="col-12 col-md-6">
-                <q-card flat bordered class="weather-widget-container">
-                    <WeatherWidget />
+                <q-card flat bordered>
+                    <q-card-section>
+                        <div class="text-h6 q-mb-md">Weather</div>
+                        <WeatherWidget />
+                    </q-card-section>
                 </q-card>
             </div>
+
+            <!-- Image Cropper Section -->
+            <div class="col-12 col-md-6"></div>
         </div>
     </div>
 </template>
@@ -75,10 +75,5 @@ import WeatherWidget from '@/components/WeatherWidget.vue'
         transform: translateY(-2px);
         box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
     }
-}
-
-.weather-widget-container {
-    height: 100%;
-    min-height: 400px;
 }
 </style>

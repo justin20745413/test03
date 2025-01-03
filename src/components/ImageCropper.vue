@@ -250,7 +250,7 @@ const deleteImage = () => {
     }
 }
 
-const cropImage = (data: any) => {
+const cropImage = () => {
     if (cropperRef.value) {
         cropperRef.value.getCropData((data: string) => {
             croppedImage.value = data
