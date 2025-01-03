@@ -12,10 +12,12 @@
 <script lang="ts" setup></script>
 <style lang="scss" scoped>
 .icon-container {
-    display: flex; // 改為 flex 布局
-    justify-content: center; // 水平置中
-    align-items: center; // 垂直置中
-    gap: 50px; // 保持原有間距
+    display: grid;
+    grid-template-columns: repeat(6, 1fr);
+    gap: 32px;
+    padding: 20px;
+    justify-items: center;
+    align-items: center;
 }
 
 /* Battery */
@@ -268,6 +270,80 @@
 @keyframes l2 {
     0% {
         background-position: 100%;
+    }
+}
+
+@media (min-width: 1530px) {
+    .icon-container {
+        grid-template-columns: repeat(6, 1fr);
+        gap: 32px;
+        padding: 20px;
+    }
+}
+
+@media (max-width: 1530px) {
+    .icon-container {
+        grid-template-columns: repeat(3, 1fr);
+        gap: 24px;
+        padding: 16px;
+    }
+
+    .Battery {
+        width: 60px;
+        height: 30px;
+    }
+
+    .water {
+        width: 50px;
+    }
+
+    .triangle {
+        width: 60px;
+    }
+
+    .water_droplets {
+        width: 80px;
+    }
+
+    .square {
+        width: 50px;
+    }
+
+    .loading {
+        font-size: 32px;
+    }
+}
+
+@media (max-width: 480px) {
+    .icon-container {
+        grid-template-columns: repeat(2, 1fr);
+        gap: 16px;
+        padding: 12px;
+    }
+
+    .Battery {
+        width: 50px;
+        height: 25px;
+    }
+
+    .water {
+        width: 40px;
+    }
+
+    .triangle {
+        width: 50px;
+    }
+
+    .water_droplets {
+        width: 60px;
+    }
+
+    .square {
+        width: 40px;
+    }
+
+    .loading {
+        font-size: 24px;
     }
 }
 </style>

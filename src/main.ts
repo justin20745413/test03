@@ -1,6 +1,6 @@
 import { createApp } from 'vue'
 import { createPinia } from 'pinia'
-import { Quasar } from 'quasar'
+import { Quasar, Notify } from 'quasar'
 import VueScrollTo from 'vue-scrollto'
 import { gsap } from 'gsap'
 import router from './router'
@@ -25,7 +25,17 @@ app.config.globalProperties.$gsap = gsap
 
 app.use(createPinia())
 app.use(router)
-app.use(Quasar)
+app.use(Quasar, {
+    plugins: {
+        Notify
+    },
+    config: {
+        notify: {
+            position: 'top-right',
+            timeout: 2500
+        }
+    }
+})
 app.use(VueScrollTo)
 
 app.mount('#app')

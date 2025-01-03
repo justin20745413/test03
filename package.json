@@ -11,6 +11,7 @@
     "dependencies": {
         "@quasar/extras": "^1.16.15",
         "@vueuse/core": "^10.7.2",
+        "echarts": "^5.6.0",
         "gsap": "^3.12.5",
         "pinia": "^2.1.7",
         "quasar": "^2.14.6",

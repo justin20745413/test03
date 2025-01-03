@@ -425,16 +425,58 @@ onMounted(() => {
     display: none;
 }
 
+@media (max-width: 1024px) {
+    .image-editor-container {
+        padding: 16px;
+    }
+
+    .thumbs-container {
+        .thumb-slide {
+            width: calc(25% - 8px);
+        }
+    }
+}
+
 @media (max-width: 768px) {
     .image-editor-container {
         padding: 12px;
     }
 
+    .banner-container {
+        .image-toolbar {
+            opacity: 1;
+            background: rgba(0, 0, 0, 0.4);
+        }
+    }
+
+    .thumbs-container {
+        .thumb-slide {
+            width: calc(33.33% - 8px);
+        }
+    }
+
+    .cropper-container {
+        height: 40vh;
+    }
+}
+
+@media (max-width: 480px) {
     .navigation-buttons {
         .nav-btn {
-            width: 36px;
-            height: 36px;
+            width: 32px;
+            height: 32px;
+
+            &.prev-btn {
+                left: 8px;
+            }
+            &.next-btn {
+                right: 8px;
+            }
         }
+    }
+
+    .thumbs-container {
+        padding: 8px;
     }
 }
 </style>

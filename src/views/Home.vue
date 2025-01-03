@@ -36,6 +36,13 @@
                     </q-card-section>
                 </q-card>
             </div>
+
+            <!-- 添加天氣組件 -->
+            <div class="col-12 col-md-6">
+                <q-card flat bordered class="weather-widget-container">
+                    <WeatherWidget />
+                </q-card>
+            </div>
         </div>
     </div>
 </template>
@@ -45,6 +52,7 @@ import ProductCarousel from '@/components/ProductCarousel.vue'
 import DraggableList from '@/components/DraggableList.vue'
 import ImageCropper from '@/components/ImageCropper.vue'
 import CssIcon from '@/components/CssIcon.vue'
+import WeatherWidget from '@/components/WeatherWidget.vue'
 </script>
 
 <style lang="scss" scoped>
@@ -67,5 +75,10 @@ import CssIcon from '@/components/CssIcon.vue'
         transform: translateY(-2px);
         box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
     }
+}
+
+.weather-widget-container {
+    height: 100%;
+    min-height: 400px;
 }
 </style>
