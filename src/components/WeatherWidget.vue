@@ -147,7 +147,7 @@ onMounted(() => {
     align-items: center;
     margin-bottom: 2rem;
     padding: 1.5rem;
-    background: linear-gradient(135deg, var(--q-primary) 0%, var(--q-primary) 100%);
+    background: linear-gradient(135deg, var(--q-primary) 0%, rgb(215, 72, 72) 100%);
     border-radius: 12px;
     color: white;
 }
