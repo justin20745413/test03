@@ -1,0 +1,55 @@
+$primary: #1976d2;
+$primary-dark: #0d47a1;
+$secondary: #26a69a;
+$secondary-dark: #ffd500;
+$accent: #00b953;
+$accent-dark: #dd42fc;
+
+$dark: #1d1d1d;
+$dark-page: #121212;
+
+$positive: #21ba45;
+$positive-dark: #1b5e20;
+$negative: #c10015;
+$negative-dark: #ff0000;
+$info: #31ccec;
+$info-dark: #006064;
+$warning: #f2c037;
+$warning-dark: #f57f17;
+$ptext: #2e2e2e;
+$ptext-dark: #ffffff;
+$orange: #206347;
+$orange-dark: #8dee6f;
+$secondary-dark: #ffd500;
+$accent-dark: #dd42fc;
+
+$body-font-family: 'Roboto', sans-serif;
+$heading-font-family: 'Roboto', sans-serif;
+
+:root {
+    --q-primary: #{$primary};
+    --q-primary-dark: #{$primary-dark};
+    --q-secondary: #{$secondary};
+    --q-secondary-dark: #{$secondary-dark};
+    --q-accent: #{$accent};
+    --q-accent-dark: #{$accent-dark};
+    --q-positive: #{$positive};
+    --q-negative: #{$negative};
+    --q-info: #{$info};
+    --q-warning: #{$warning};
+    --q-ptext: #{$ptext};
+    --q-orange: #{$orange};
+}
+
+.body--dark {
+    --q-primary: #{$primary-dark};
+    --q-secondary: #{$secondary-dark};
+    --q-accent: #{$accent-dark};
+    --q-positive: #{$positive-dark};
+    --q-negative: #{$negative-dark};
+    --q-info: #{$info-dark};
+    --q-warning: #{$warning-dark};
+    --q-ptext: #{$ptext-dark};
+    --q-orange: #{$orange-dark};
+    --q-background: #{$dark-page};
+}
