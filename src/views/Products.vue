@@ -8,20 +8,22 @@
                 class="col-12 col-sm-6 col-md-3"
             >
                 <q-card class="pokemon-card" :class="$q.dark.isActive ? 'bg-dark' : 'bg-white'">
-                    <q-img
-                        :src="pokemon.image"
-                        :ratio="1"
-                        class="pokemon-image"
-                        :class="[
-                            $q.dark.isActive ? 'dark-mode-image' : 'light-mode-image',
-                            `border-${currentTheme}`
-                        ]"
-                        spinner-color="primary"
-                    >
-                        <template v-slot:loading>
-                            <q-spinner-dots :color="currentTheme" />
-                        </template>
-                    </q-img>
+                    <div>
+                        <q-img
+                            :src="pokemon.image"
+                            :ratio="1"
+                            class="pokemon-image"
+                            :class="[
+                                $q.dark.isActive ? 'dark-mode-image' : 'light-mode-image',
+                                `border-${currentTheme}`
+                            ]"
+                            spinner-color="primary"
+                        >
+                            <template v-slot:loading>
+                                <q-spinner-dots :color="currentTheme" />
+                            </template>
+                        </q-img>
+                    </div>
                     <q-card-section>
                         <div class="text-h6 text-capitalize text-weight-bold">
                             {{ pokemon.name }}
