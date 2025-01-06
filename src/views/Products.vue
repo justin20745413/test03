@@ -170,8 +170,9 @@
         </q-btn>
 
         <q-dialog v-model="showCart" position="right">
-            <q-card class="cart-dialog" :class="$q.dark.isActive ? 'bg-dark' : 'bg-white'">
-                <q-card-section class="row items-center">
+            <q-card class="cart-dialog">
+                <!-- 固定的頂部 -->
+                <q-card-section class="cart-header">
                     <div class="text-h6" :class="$q.dark.isActive ? 'text-white' : 'text-dark'">
                         <q-icon name="shopping_cart" :color="currentTheme" class="q-mr-sm" />
                         購物車
@@ -189,12 +190,13 @@
 
                 <q-separator :dark="$q.dark.isActive" />
 
-                <q-card-section class="cart-items q-pa-none">
+                <!-- 可滾動的商品列表 -->
+                <q-card-section class="cart-items-container">
                     <q-list v-if="cart.length" padding separator>
                         <q-item
                             v-for="item in cart"
                             :key="item.id"
-                            class="q-py-md cart-item"
+                            class="q-py-md cart-item cart-items"
                             :class="$q.dark.isActive ? 'text-white' : 'text-dark'"
                         >
                             <q-item-section avatar>
@@ -235,27 +237,29 @@
                     </div>
                 </q-card-section>
 
+                <!-- 固定的底部 -->
                 <template v-if="cart.length">
                     <q-separator :dark="$q.dark.isActive" />
-
-                    <q-card-section :class="$q.dark.isActive ? 'text-white' : 'text-dark'">
-                        <div class="row items-center justify-between">
-                            <div class="text-h6">總計:</div>
-                            <div class="text-h5" :class="`text-${currentTheme}`">
-                                ${{ totalPrice }}
+                    <div class="cart-footer">
+                        <q-card-section :class="$q.dark.isActive ? 'text-white' : 'text-dark'">
+                            <div class="row items-center justify-between">
+                                <div class="text-h6">總計:</div>
+                                <div class="text-h5" :class="`text-${currentTheme}`">
+                                    ${{ totalPrice }}
+                                </div>
                             </div>
-                        </div>
-                    </q-card-section>
+                        </q-card-section>
 
-                    <q-card-actions align="right" class="q-pa-md">
-                        <q-btn
-                            :color="currentTheme"
-                            label="結帳"
-                            icon="payment"
-                            :flat="$q.dark.isActive"
-                            :glossy="!$q.dark.isActive"
-                        />
-                    </q-card-actions>
+                        <q-card class="q-pa-md" align="right">
+                            <q-btn
+                                :color="currentTheme"
+                                label="結帳"
+                                icon="payment"
+                                :flat="$q.dark.isActive"
+                                :glossy="!$q.dark.isActive"
+                            />
+                        </q-card>
+                    </div>
                 </template>
             </q-card>
         </q-dialog>
@@ -364,9 +368,11 @@ const removeFromCart = (pokemon: any) => {
 const updateQuantity = (pokemon: any, amount: number) => {
     const item = cart.value.find((item) => item.id === pokemon.id)
     if (item) {
-        item.quantity = Math.max(1, item.quantity + amount)
-        if (item.quantity === 0) {
+        const newQuantity = item.quantity + amount
+        if (newQuantity <= 0) {
             removeFromCart(pokemon)
+        } else {
+            item.quantity = newQuantity
         }
     }
 }
@@ -486,38 +492,40 @@ const formatStatName = (name: string) => {
     min-width: 360px;
     height: 100vh;
     border-radius: 0;
+    display: flex;
+    flex-direction: column;
+}
 
-    .cart-items {
-        height: calc(100vh - 150px);
-        overflow-y: auto;
+.cart-header {
+    display: flex;
+    align-items: center;
+    padding: 16px;
+    flex-shrink: 0;
+}
 
-        &::-webkit-scrollbar {
-            width: 8px;
-        }
+.cart-items-container {
+    flex: 1;
+    overflow-y: auto;
+    padding: 0;
 
-        &::-webkit-scrollbar-track {
-            background: transparent;
-        }
-
-        &::-webkit-scrollbar-thumb {
-            background: var(--q-primary);
-            border-radius: 4px;
-        }
+    &::-webkit-scrollbar {
+        width: 8px;
     }
 
-    .cart-item {
-        transition: all 0.2s ease;
-
-        &:hover {
-            background: rgba(0, 0, 0, 0.05);
-        }
-
-        .body--dark & {
-            &:hover {
-                background: rgba(255, 255, 255, 0.05);
-            }
-        }
+    &::-webkit-scrollbar-track {
+        background: transparent;
     }
+
+    &::-webkit-scrollbar-thumb {
+        background: var(--q-primary);
+        border-radius: 4px;
+    }
+}
+
+.cart-footer {
+    flex-shrink: 0;
+    background: inherit;
+    border-top: 1px solid rgba(0, 0, 0, 0.12);
 }
 
 .q-btn {
