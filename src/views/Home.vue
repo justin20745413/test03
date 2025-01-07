@@ -15,7 +15,7 @@
                         <DraggableList />
                     </q-card-section>
                 </q-card>
-                <q-card flat bordered class="flex flex-center tw-mt-4">
+                <q-card flat bordered class="flex flex-start tw-mt-4">
                     <div>
                         <q-card-section>
                             <div class="text-h6 q-mb-md">Progress Image</div>

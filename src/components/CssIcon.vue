@@ -12,11 +12,8 @@
 <script lang="ts" setup></script>
 <style lang="scss" scoped>
 .icon-container {
-    display: grid;
-    grid-template-columns: repeat(6, 1fr);
-    gap: 32px;
-    padding: 20px;
-    justify-items: center;
+    display: flex;
+    flex-wrap: wrap;
     align-items: center;
 }
 
@@ -276,15 +273,14 @@
 @media (min-width: 1530px) {
     .icon-container {
         grid-template-columns: repeat(6, 1fr);
-        gap: 32px;
+        gap: 19px;
         padding: 20px;
     }
 }
 
 @media (max-width: 1530px) {
     .icon-container {
-        grid-template-columns: repeat(3, 1fr);
-        gap: 24px;
+        gap: 64px;
         padding: 16px;
     }
 
