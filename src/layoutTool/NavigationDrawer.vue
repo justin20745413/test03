@@ -1,5 +1,5 @@
 <template>
-    <q-drawer v-model="leftDrawerOpen" bordered :width="250" :breakpoint="400">
+    <q-drawer v-model="leftDrawerOpen as boolean" bordered :width="250" :breakpoint="400">
         <div class="fixed-navigation">
             <q-item-label header>Navigation</q-item-label>
         </div>

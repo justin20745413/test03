@@ -11,13 +11,21 @@
                 <q-btn round flat icon="palette">
                     <q-menu>
                         <q-list style="min-width: 150px">
-                            <q-item clickable v-close-popup @click="changeThemeColor('secondary')">
+                            <q-item
+                                clickable
+                                v-close-popup
+                                @click="changeThemeColor && changeThemeColor('secondary')"
+                            >
                                 <q-item-section avatar>
                                     <q-icon color="secondary" name="circle" />
                                 </q-item-section>
                                 <q-item-section>COLOR 1</q-item-section>
                             </q-item>
-                            <q-item clickable v-close-popup @click="changeThemeColor('accent')">
+                            <q-item
+                                clickable
+                                v-close-popup
+                                @click="changeThemeColor && changeThemeColor('accent')"
+                            >
                                 <q-item-section avatar>
                                     <q-icon color="accent" name="circle" />
                                 </q-item-section>
@@ -44,11 +52,11 @@
 <script setup lang="ts">
 import { inject, Ref } from 'vue'
 
-const isDark = inject('isDark') as Ref<boolean>
-const currentTheme = inject('currentTheme') as Ref<string>
-const toggleLeftDrawer = inject('toggleLeftDrawer') as () => void
-const changeThemeColor = inject('changeThemeColor') as (color: string) => void
-const toggleDarkMode = inject('toggleDarkMode') as () => void
+const isDark = inject<Ref<boolean>>('isDark')
+const currentTheme = inject<Ref<string>>('currentTheme')
+const toggleLeftDrawer = inject<() => void>('toggleLeftDrawer')
+const changeThemeColor = inject<(color: string) => void>('changeThemeColor')
+const toggleDarkMode = inject<() => void>('toggleDarkMode')
 </script>
 
 <style lang="scss">
