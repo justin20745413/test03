@@ -23,11 +23,11 @@
 
                 <q-item-label header>Tools</q-item-label>
 
-                <q-item clickable v-ripple to="/draggable">
+                <q-item clickable v-ripple to="/fileupload">
                     <q-item-section avatar>
                         <q-icon name="drag_indicator" />
                     </q-item-section>
-                    <q-item-section>Draggable List</q-item-section>
+                    <q-item-section>檔案上傳區</q-item-section>
                 </q-item>
 
                 <q-item clickable v-ripple to="/cropper">
@@ -35,6 +35,13 @@
                         <q-icon name="crop" />
                     </q-item-section>
                     <q-item-section>Image Cropper</q-item-section>
+                </q-item>
+
+                <q-item clickable v-ripple to="/practice">
+                    <q-item-section avatar>
+                        <q-icon name="school" />
+                    </q-item-section>
+                    <q-item-section>練習區</q-item-section>
                 </q-item>
             </q-list>
         </div>

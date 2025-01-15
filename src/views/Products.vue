@@ -115,9 +115,9 @@
                         </q-expansion-item>
 
                         <!-- 價格 -->
-                        <div class="text-subtitle1 text-primary q-mt-sm">
-                            <q-icon name="paid" size="sm" />
-                            <span class="q-ml-xs">${{ pokemon.price }}</span>
+                        <div class="items-center flex">
+                            <q-icon name="paid" size="sm" :color="currentTheme" class="q-ml-sm" />
+                            <span class="q-ml-sm">${{ pokemon.price }}</span>
                         </div>
                     </q-card-section>
                     <q-card-actions align="center" class="q-pb-md">
@@ -267,16 +267,17 @@
 </template>
 
 <script setup lang="ts">
-import { ref, computed, onMounted, watch } from 'vue'
+import { ref, computed, onMounted, watch, inject, Ref } from 'vue'
 import { useQuasar } from 'quasar'
 
 const $q = useQuasar()
+const currentTheme = inject('currentTheme') as Ref<string>
+
 const pokemons = ref<any[]>([])
-const cart = ref<any[]>([]) // 購物車，包含商品和數量
+const cart = ref<any[]>([])
 const showCart = ref(false)
 const currentPage = ref(1)
 const itemsPerPage = 24
-const currentTheme = ref('secondary')
 const isAdding = ref<Record<number, boolean>>({})
 
 // 計算當前頁面顯示的寶可夢
@@ -447,10 +448,16 @@ const formatStatName = (name: string) => {
         position: relative;
         z-index: 10;
 
-        &.dark-mode-image {
-            background-color: rgba(67, 210, 220, 0.9);
+        &.light-mode-image {
+            background-color: white;
             &:hover {
-                background-color: rgba(55, 166, 173, 0.9);
+                background-color: rgb(127, 231, 141);
+            }
+        }
+        &.dark-mode-image {
+            background-color: white;
+            &:hover {
+                background-color: red;
             }
         }
 

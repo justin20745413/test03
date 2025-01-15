@@ -1,5 +1,5 @@
 <template>
-    <q-layout view="hHh lpR fFf">
+    <q-layout view="lHh LpR fFf">
         <Header />
 
         <NavigationDrawer />
@@ -49,8 +49,8 @@ provide('toggleDarkMode', toggleDarkMode)
 const changeThemeColor = (color: string) => {
     currentTheme.value = color
 
-    console.log('当前模式:', isDark.value ? '暗色' : '亮色')
-    console.log('选择的颜色:', color)
+    console.log('當前模式:', isDark.value ? '暗色' : '亮色')
+    console.log('選擇的顏色:', color)
 
     if (isDark.value) {
         document.documentElement.style.setProperty('--q-primary', `var(--q-${color}-dark)`)

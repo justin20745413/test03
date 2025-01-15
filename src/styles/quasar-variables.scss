@@ -1,9 +1,7 @@
 $primary: #1976d2;
 $primary-dark: #0d47a1;
 $secondary: #26a69a;
-$secondary-dark: #ffd500;
 $accent: #00b953;
-$accent-dark: #dd42fc;
 
 $dark: #1d1d1d;
 $dark-page: #121212;
@@ -31,8 +29,8 @@ $heading-font-family: 'Roboto', sans-serif;
     --q-primary-dark: #{$primary-dark};
     --q-secondary: #{$secondary};
     --q-secondary-dark: #{$secondary-dark};
+    --q-accent: #{$accent-dark};
     --q-accent: #{$accent};
-    --q-accent-dark: #{$accent-dark};
     --q-positive: #{$positive};
     --q-negative: #{$negative};
     --q-info: #{$info};
