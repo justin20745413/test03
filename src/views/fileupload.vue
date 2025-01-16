@@ -10,23 +10,17 @@
                 <q-uploader
                     v-if="openUploader"
                     ref="uploader"
-                    :url="uploadUrl"
-                    :headers="getHeaders"
+                    :url="`${API_BASE_URL}/upload`"
                     field-name="files"
                     color="primary"
                     label="選擇檔案"
                     multiple
                     :max-files="5"
-                    @added="onFilesAdded"
+                    :headers="uploadHeaders"
                     @uploaded="onFilesUploaded"
+                    @failed="onUploadFailed"
                     :auto-upload="false"
-                    :with-credentials="false"
-                    :form-fields="[
-                        {
-                            name: 'charset',
-                            value: 'utf-8'
-                        }
-                    ]"
+                    style="width: 100%"
                 />
             </div>
         </div>
@@ -38,7 +32,7 @@
                 row-key="id"
                 selection="multiple"
                 v-model:selected="selectedRows"
-                :rows-per-page="5"
+                :rows-per-page="pagination.rowsPerPage"
                 :pagination.sync="pagination"
                 :loading="loading"
                 :filter="filter"
@@ -77,7 +71,7 @@
                                     ? 'positive'
                                     : props.row.status === 'error'
                                       ? 'negative'
-                                      : 'grey'
+                                      : 'primary'
                             "
                             text-color="white"
                             size="sm"
@@ -90,7 +84,7 @@
 
                 <template #body-cell-actions="props">
                     <q-td :props="props">
-                        <div class="tw-flex tw-gap-2">
+                        <div class="tw-flex tw-justify-center tw-gap-2">
                             <q-btn
                                 flat
                                 round
@@ -113,21 +107,23 @@
 
                 <template v-slot:bottom>
                     <div class="tw-flex tw-justify-between tw-items-center tw-w-full tw-px-4">
-                        <div class="tw-text-gray-600">共 {{ rows.length }} 個檔案</div>
+                        <div class="tw-text-gray-600">共 {{ pagination.totalRows }} 個檔案</div>
                         <q-pagination
                             v-model="pagination.page"
-                            :max="Math.ceil(rows.length / pagination.rowsPerPage)"
+                            :max="pagination.totalPages"
                             boundary-numbers
                             direction-links
                             boundary-links
                             color="primary"
                             size="sm"
                             class="tw-shadow-sm"
+                            @update:model-value="fetchFiles"
                         />
                     </div>
                 </template>
             </q-table>
         </q-card>
+        {{ rows }}
     </div>
 
     <q-btn label="重置 ID 計數器" color="primary" @click="resetIdCounter" />
@@ -135,193 +131,194 @@
 
 <script setup lang="ts">
 import { ref, computed, onMounted } from 'vue'
-import { Notify, QTableColumn } from 'quasar'
-import { APIFileResponse, FileService, FileData } from '@/types/fileUpload'
-import axios from 'axios'
+import { Notify } from 'quasar'
+import type { FileData, APIFileResponse } from '../types/fileUpload'
+import { fileApi } from '../services/fileApi'
+import { API_BASE_URL } from '../services/fileApi'
 
-const apiUrl = import.meta.env.VITE_API_URL
-const uploadUrl = `${apiUrl}/upload`
-const checkUrl = `${apiUrl}/upload/check`
-const getHeaders = () => [
-    { name: 'Authorization', value: `Bearer ${localStorage.getItem('token')}` }
+// 狀態變數
+const openUploader = ref(false)
+const loading = ref(false)
+const rows = ref<FileData[]>([])
+const filter = ref('')
+const selectedRows = ref<FileData[]>([])
+
+const pagination = ref({
+    page: 1,
+    rowsPerPage: 8,
+    totalPages: 0,
+    totalRows: 0
+})
+
+// 上傳相關
+const uploader = ref()
+
+// 上傳相關配置
+const uploadHeaders = [
+    {
+        name: 'Accept',
+        value: 'application/json'
+    }
 ]
 
-const openUploader = ref(false)
+// 計算過濾後的行
+const filteredRows = computed(() => {
+    const searchTerm = filter.value.toLowerCase()
+    return rows.value.filter((row) => {
+        const name = row.name?.toLowerCase() || ''
+        const type = row.type?.toLowerCase() || ''
+        const uploader = row.uploader?.toLowerCase() || ''
+
+        return (
+            name.includes(searchTerm) || type.includes(searchTerm) || uploader.includes(searchTerm)
+        )
+    })
+})
+
+// 方法
 const toggleUploader = () => {
     openUploader.value = !openUploader.value
 }
 
-const rows = ref<FileData[]>([])
-const loading = ref(true)
-const filter = ref('')
-const rowsPerPage = ref(5)
-const pagination = ref({ page: 1, rowsPerPage: rowsPerPage.value })
-const selectedRows = ref<any[]>([])
-
-const columns: QTableColumn[] = [
-    {
-        name: 'id',
-        label: 'ID',
-        align: 'left',
-        field: 'id',
-        sortable: true,
-        classes: 'tw-font-medium'
-    },
-    {
-        name: 'name',
-        label: '檔案名稱',
-        align: 'left',
-        field: 'name',
-        sortable: true,
-        classes: 'tw-font-medium'
-    },
-    { name: 'type', label: '類型', align: 'center', field: 'type', sortable: true },
-    { name: 'date', label: '上傳日期', align: 'center', field: 'date', sortable: true },
-    { name: 'size', label: '檔案大小', align: 'center', field: 'size', sortable: true },
-    { name: 'uploader', label: '上傳者', align: 'center', field: 'uploader', sortable: true },
-    { name: 'status', label: '狀態', align: 'center', field: 'status', sortable: true },
-    {
-        name: 'actions',
-        label: '操作',
-        align: 'center',
-        field: 'actions',
-        sortable: true
-    }
-]
-
-const filteredRows = computed(() => {
-    const sortedRows = [...rows.value].sort((a, b) => b.id - a.id)
-    const filtered = sortedRows.filter((row) =>
-        Object.values(row).join(' ').toLowerCase().includes(filter.value.toLowerCase())
-    )
-    const start = (pagination.value.page - 1) * pagination.value.rowsPerPage
-    const end = start + pagination.value.rowsPerPage
-    return filtered.slice(start, end)
-})
-
 const fetchFiles = async () => {
-    loading.value = true
-    rows.value = []
     try {
-        const response = await axios.get(`${apiUrl}/files`)
-        rows.value = response.data.map((file: APIFileResponse) => ({
+        loading.value = true
+        const response = await fileApi.getFiles(pagination.value.page, pagination.value.rowsPerPage)
+        rows.value = response.files.map((file: APIFileResponse) => ({
             id: file.id,
             name: file.fileName,
             type: file.fileType,
-            date: new Date(file.uploadDate).toLocaleDateString(),
-            size: FileService.formatFileSize(file.fileSize),
+            date: file.uploadDate,
+            size: formatFileSize(file.fileSize),
             uploader: file.uploaderName,
             status: file.status
         }))
+        // 更新分頁信息
+        pagination.value.totalRows = response.total
+        pagination.value.totalPages = Math.ceil(response.total / pagination.value.rowsPerPage)
     } catch (error) {
-        console.error('獲取檔案失敗:', error)
-        Notify.create({
-            type: 'negative',
-            message: '獲取檔案失敗'
-        })
+        console.error('獲取檔案列表失敗:', error)
+    } finally {
+        loading.value = false
     }
-    loading.value = false
 }
 
-const uploader = ref()
-const confirmDialog = ref(false)
-const currentFile = ref(null)
+const formatFileSize = (bytes: number): string => {
+    if (bytes === 0) return '0 Bytes'
+    const k = 1024
+    const sizes = ['Bytes', 'KB', 'MB', 'GB']
+    const i = Math.floor(Math.log(bytes) / Math.log(k))
+    return parseFloat((bytes / Math.pow(k, i)).toFixed(2)) + ' ' + sizes[i]
+}
 
-const onFilesAdded = async (files: readonly any[]) => {
+const onFilesUploaded = (info) => {
+    console.log('上傳成功：', info)
+    fetchFiles()
+}
+
+const onUploadFailed = (info) => {
+    console.error('上傳失敗：', info)
+}
+
+const downloadFile = (fileName: string) => {
+    window.open(fileApi.downloadFile(fileName), '_blank')
+}
+
+const deleteFiles = async (files: FileData[]) => {
     try {
-        for (const file of files) {
-            try {
-                await axios.post(checkUrl, null, {
-                    params: { fileName: file.name }
-                })
-                // 如果檔案不存在，加入上傳隊列
-                uploader.value.addFiles([file])
-            } catch (error: any) {
-                if (error.response?.status === 409) {
-                    // 檔案已存在，顯示確認對話框
-                    currentFile.value = file
-                    confirmDialog.value = true
-                    return // 停止處理其他檔案
-                }
-                throw error
-            }
+        // 使用原生的 confirm 對話框
+        if (!confirm(`確定要刪除 ${files.length} 個檔案嗎？`)) {
+            return
         }
-    } catch (error) {
-        console.error('檢查檔案失敗:', error)
-        Notify.create({
-            type: 'negative',
-            message: '檢查檔案時發生錯誤'
-        })
-    }
-}
 
-const onFilesUploaded = async () => {
-    await fetchFiles() // 重新獲取檔案列表
-    Notify.create({
-        type: 'positive',
-        message: '檔案上傳成功！'
-    })
-    openUploader.value = false
-}
-
-const downloadFile = async (fileName: string) => {
-    try {
-        const blob = await FileService.downloadFile(fileName)
-        const url = window.URL.createObjectURL(blob)
-        const link = document.createElement('a')
-        link.href = url
-        link.download = fileName
-        document.body.appendChild(link)
-        link.click()
-        document.body.removeChild(link)
-        window.URL.revokeObjectURL(url)
-    } catch (error) {
-        Notify.create({
-            type: 'negative',
-            message: '檔案下載失敗'
-        })
-    }
-}
-
-const deleteFiles = async (filesToDelete = selectedRows.value) => {
-    try {
-        for (const row of filesToDelete) {
-            await FileService.deleteFile(row.name)
+        for (const file of files) {
+            await fileApi.deleteFile(file.id)
         }
         await fetchFiles()
         selectedRows.value = []
+
         Notify.create({
             type: 'positive',
             message: '檔案刪除成功'
         })
-    } catch (error) {
-        console.error('刪除失敗:', error)
+    } catch (error: any) {
+        console.error('刪除檔案失敗:', error)
         Notify.create({
             type: 'negative',
-            message: '檔案刪除失敗'
+            message: `刪除檔案失敗: ${error.message || '未知錯誤'}`
         })
     }
 }
 
 const resetIdCounter = async () => {
     try {
-        const response = await axios.post(`${apiUrl}/reset-id`)
-        if (response.data.success) {
-            Notify.create({
-                type: 'positive',
-                message: 'ID 計數器已重置'
-            })
-            await fetchFiles() // 重置後重新獲取檔案列表
-        }
+        await fileApi.resetIdCounter()
+        await fetchFiles()
     } catch (error) {
         console.error('重置 ID 計數器失敗:', error)
-        Notify.create({
-            type: 'negative',
-            message: '重置 ID 計數器失敗'
-        })
     }
 }
 
+// 添加 columns 定義
+const columns = [
+    {
+        name: 'id',
+        required: true,
+        label: 'ID',
+        align: 'left',
+        field: 'id',
+        sortable: true
+    },
+    {
+        name: 'name',
+        required: true,
+        label: '檔案名稱',
+        align: 'left',
+        field: 'name',
+        sortable: true
+    },
+    {
+        name: 'type',
+        required: true,
+        label: '檔案類型',
+        align: 'left',
+        field: 'type',
+        sortable: true
+    },
+    {
+        name: 'size',
+        required: true,
+        label: '檔案大小',
+        align: 'left',
+        field: 'size',
+        sortable: true
+    },
+    {
+        name: 'uploader',
+        required: true,
+        label: '上傳者',
+        align: 'left',
+        field: 'uploader',
+        sortable: true
+    },
+    {
+        name: 'status',
+        required: true,
+        label: '狀態',
+        align: 'left',
+        field: 'status',
+        sortable: true
+    },
+    {
+        name: 'actions',
+        required: true,
+        label: '操作',
+        align: 'center',
+        field: 'actions'
+    }
+]
+
+// 初始化
 onMounted(() => {
     fetchFiles()
 })
@@ -345,5 +342,8 @@ onMounted(() => {
     :deep(.q-table tbody tr:hover) {
         background-color: #f1f5f9;
     }
+}
+:deep(.q-table thead th) {
+    background-color: var(--q-background) !important;
 }
 </style>
