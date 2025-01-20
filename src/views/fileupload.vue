@@ -5,7 +5,7 @@
                 <q-icon name="folder" class="tw-text-primary tw-text-3xl tw-mr-3" />
                 <span class="tw-text-2xl tw-font-bold">檔案上傳區</span>
             </div>
-            <div class="tw-flex tw-flex-col tw-items-end tw-gap-4">
+            <div class="tw-flex tw-flex-col tw-items-end tw-gap-3">
                 <q-btn color="primary" icon="upload" label="新增新檔案" @click="toggleUploader" />
                 <q-uploader
                     v-if="openUploader"
@@ -15,16 +15,10 @@
                     color="primary"
                     label="選擇檔案"
                     multiple
-                    :max-files="5"
                     :headers="uploadHeaders"
-                    @uploaded="onFilesUploaded"
-                    @failed="onUploadFailed"
                     :auto-upload="false"
-                    style="width: 100%"
+                    @uploaded="onUploadComplete"
                 />
-                <span v-if="openUploader" class="tw-text-gray-500 tw-text-sm">
-                    最大上限 5 筆檔案
-                </span>
             </div>
         </div>
 
@@ -126,10 +120,11 @@
                 </template>
             </q-table>
         </q-card>
-        {{ rows }}
     </div>
 
-    <q-btn label="重置 ID 計數器" color="primary" @click="resetIdCounter" />
+    <div class="tw-flex tw-justify-end tw-mt-4 tw-mr-6">
+        <q-btn label="重置 ID 計數器" color="primary" @click="resetIdCounter" />
+    </div>
 </template>
 
 <script setup lang="ts">
@@ -187,7 +182,21 @@ const toggleUploader = () => {
 const fetchFiles = async () => {
     try {
         loading.value = true
-        const response = await fileApi.getFiles(pagination.value.page, pagination.value.rowsPerPage)
+        const response = await fileApi.getFiles(
+            pagination.value.page,
+            pagination.value.rowsPerPage,
+            {
+                sortBy: 'id',
+                sortOrder: 'desc'
+            }
+        )
+
+        if (pagination.value.page > response.totalPages && response.totalPages > 0) {
+            pagination.value.page = response.totalPages
+            await fetchFiles()
+            return
+        }
+
         rows.value = response.files.map((file: APIFileResponse) => ({
             id: file.id,
             name: file.fileName,
@@ -197,9 +206,9 @@ const fetchFiles = async () => {
             uploader: file.uploaderName,
             status: file.status
         }))
-        // 更新分頁信息
+
         pagination.value.totalRows = response.total
-        pagination.value.totalPages = Math.ceil(response.total / pagination.value.rowsPerPage)
+        pagination.value.totalPages = response.totalPages
     } catch (error) {
         console.error('獲取檔案列表失敗:', error)
     } finally {
@@ -215,31 +224,44 @@ const formatFileSize = (bytes: number): string => {
     return parseFloat((bytes / Math.pow(k, i)).toFixed(2)) + ' ' + sizes[i]
 }
 
-const onFilesUploaded = (info) => {
-    console.log('上傳成功：', info)
-    fetchFiles()
-}
-
-const onUploadFailed = (info) => {
-    console.error('上傳失敗：', info)
-}
-
 const downloadFile = (fileName: string) => {
     window.open(fileApi.downloadFile(fileName), '_blank')
 }
 
 const deleteFiles = async (files: FileData[]) => {
     try {
-        // 使用原生的 confirm 對話框
         if (!confirm(`確定要刪除 ${files.length} 個檔案嗎？`)) {
             return
         }
 
-        for (const file of files) {
-            await fileApi.deleteFile(file.id)
-        }
-        await fetchFiles()
+        // 清除已選擇的檔案
         selectedRows.value = []
+
+        for (const file of files) {
+            const response = await fileApi.deleteFile(
+                file.id,
+                pagination.value.page,
+                pagination.value.rowsPerPage
+            )
+
+            if (response && response.success) {
+                // 更新分頁資訊
+                pagination.value.page = response.data.page
+                pagination.value.totalPages = response.data.totalPages
+                pagination.value.totalRows = response.data.total
+
+                // 更新檔案列表
+                rows.value = response.data.files.map((file: APIFileResponse) => ({
+                    id: file.id,
+                    name: file.fileName,
+                    type: file.fileType,
+                    date: file.uploadDate,
+                    size: formatFileSize(file.fileSize),
+                    uploader: file.uploaderName,
+                    status: file.status
+                }))
+            }
+        }
 
         Notify.create({
             type: 'positive',
@@ -258,9 +280,28 @@ const resetIdCounter = async () => {
     try {
         await fileApi.resetIdCounter()
         await fetchFiles()
+        Notify.create({
+            type: 'positive',
+            message: '重置成功'
+        })
     } catch (error) {
-        console.error('重置 ID 計數器失敗:', error)
+        console.error('重置 ID 失敗:', error)
+        Notify.create({
+            type: 'negative',
+            message: '重置失敗'
+        })
     }
+}
+
+const onUploadComplete = async () => {
+    // 添加延遲確保後端處理完成
+    await new Promise((resolve) => setTimeout(resolve, 500))
+    await fetchFiles()
+    openUploader.value = false
+    Notify.create({
+        type: 'positive',
+        message: '檔案上傳成功'
+    })
 }
 
 // 添加 columns 定義

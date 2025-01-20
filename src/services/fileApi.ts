@@ -4,8 +4,12 @@ import type { APIFileResponse } from '../types/fileUpload'
 const API_BASE_URL = 'http://localhost:3000/api'
 
 const fileApi = {
-    // 獲取檔案列表（加入分頁參數）
-    getFiles: async (page: number = 1, perPage: number = 8) => {
+    // 獲取檔案列表（加入分頁和排序參數）
+    getFiles: async (
+        page: number = 1,
+        perPage: number = 8,
+        sort?: { sortBy: string; sortOrder: 'asc' | 'desc' }
+    ) => {
         const response = await axios.get<{
             files: APIFileResponse[]
             total: number
@@ -13,7 +17,12 @@ const fileApi = {
             perPage: number
             totalPages: number
         }>(`${API_BASE_URL}/files`, {
-            params: { page, perPage }
+            params: {
+                page,
+                perPage,
+                sortBy: sort?.sortBy || 'id',
+                sortOrder: sort?.sortOrder || 'desc'
+            }
         })
         return response.data
     },
@@ -34,8 +43,14 @@ const fileApi = {
     },
 
     // 刪除檔案
-    deleteFile: async (fileId: number) => {
-        await axios.delete(`${API_BASE_URL}/files/${fileId}`)
+    deleteFile: async (fileId: number, page: number, perPage: number) => {
+        const response = await axios.delete(`${API_BASE_URL}/files/${fileId}`, {
+            params: {
+                page,
+                perPage
+            }
+        })
+        return response.data
     },
 
     // 重置 ID 計數器
