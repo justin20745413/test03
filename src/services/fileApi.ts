@@ -6,8 +6,8 @@ const API_BASE_URL = 'http://localhost:3000/api'
 const fileApi = {
     // 獲取檔案列表（加入分頁和排序參數）
     getFiles: async (
-        page: number = 1,
-        perPage: number = 8,
+        page: number,
+        perPage: number,
         sort?: { sortBy: string; sortOrder: 'asc' | 'desc' }
     ) => {
         const response = await axios.get<{
@@ -27,18 +27,9 @@ const fileApi = {
         return response.data
     },
 
-    // 上傳檔案
-    uploadFiles: async (files: FormData) => {
-        const response = await axios.post<APIFileResponse[]>(`${API_BASE_URL}/upload`, files, {
-            headers: {
-                'Content-Type': 'multipart/form-data'
-            }
-        })
-        return response.data
-    },
-
     // 下載檔案
     downloadFile: (fileName: string) => {
+        console.log('fileName', fileName)
         return `${API_BASE_URL}/download/${encodeURIComponent(fileName)}`
     },
 

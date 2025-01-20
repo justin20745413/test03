@@ -8,7 +8,7 @@ export default {
   variants: {
     extend: {}
   },
-  plugins: [],
+  plugins: [require('@tailwindcss/line-clamp')],
   // Prevent conflicts with Quasar
   prefix: 'tw-'
 }

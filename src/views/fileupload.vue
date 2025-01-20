@@ -102,6 +102,14 @@
                     </q-td>
                 </template>
 
+                <template #body-cell-name="props">
+                    <q-td :props="props">
+                        <div class="tw-line-clamp-2 tw-break-words tw-whitespace-normal">
+                            {{ props.row.name }}
+                        </div>
+                    </q-td>
+                </template>
+
                 <template v-slot:bottom>
                     <div class="tw-flex tw-justify-between tw-items-center tw-w-full tw-px-4">
                         <div class="tw-text-gray-600">共 {{ pagination.totalRows }} 個檔案</div>
@@ -294,7 +302,6 @@ const resetIdCounter = async () => {
 }
 
 const onUploadComplete = async () => {
-    // 添加延遲確保後端處理完成
     await new Promise((resolve) => setTimeout(resolve, 500))
     await fetchFiles()
     openUploader.value = false
@@ -320,7 +327,8 @@ const columns: ITableColumn[] = [
         label: '檔案名稱',
         align: 'left',
         field: 'name',
-        sortable: true
+        sortable: true,
+        style: 'max-width: 250px'
     },
     {
         name: 'type',
