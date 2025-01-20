@@ -22,6 +22,9 @@
                     :auto-upload="false"
                     style="width: 100%"
                 />
+                <span v-if="openUploader" class="tw-text-gray-500 tw-text-sm">
+                    最大上限 5 筆檔案
+                </span>
             </div>
         </div>
 
@@ -135,6 +138,7 @@ import { Notify } from 'quasar'
 import type { FileData, APIFileResponse } from '../types/fileUpload'
 import { fileApi } from '../services/fileApi'
 import { API_BASE_URL } from '../services/fileApi'
+import type { ITableColumn } from '../types/completeTable'
 
 // 狀態變數
 const openUploader = ref(false)
@@ -145,7 +149,7 @@ const selectedRows = ref<FileData[]>([])
 
 const pagination = ref({
     page: 1,
-    rowsPerPage: 8,
+    rowsPerPage: 7,
     totalPages: 0,
     totalRows: 0
 })
@@ -260,7 +264,7 @@ const resetIdCounter = async () => {
 }
 
 // 添加 columns 定義
-const columns = [
+const columns: ITableColumn[] = [
     {
         name: 'id',
         required: true,
