@@ -55,7 +55,7 @@
                             dense
                             debounce="300"
                             v-model="filter"
-                            placeholder="搜尋檔案名稱、類型或上傳者...(quasar的q-input)"
+                            placeholder="(quasar的q-input) 搜尋檔案名稱、類型或上傳者..."
                             class="tw-flex-1"
                         >
                             <template v-slot:prepend>
@@ -66,7 +66,7 @@
                             <input
                                 type="text"
                                 v-model="filter"
-                                placeholder="(原生input)搜尋檔案名稱、類型或上傳者..."
+                                placeholder="(原生input) 搜尋檔案名稱、類型或上傳者..."
                                 style="background-color: var(--q-dark) var(--ptext-dark)"
                                 class="tw-w-full tw-px-10 tw-py-2 tw-border tw-border-gray-300 tw-rounded-md tw-outline-none focus:tw-border-primary focus:tw-ring-1 focus:tw-ring-primary"
                             />
