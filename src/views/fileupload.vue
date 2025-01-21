@@ -6,7 +6,12 @@
                 <span class="tw-text-2xl tw-font-bold">檔案上傳區</span>
             </div>
             <div class="tw-flex tw-flex-col tw-items-end tw-gap-3">
-                <q-btn color="primary" icon="upload" label="新增新檔案" @click="toggleUploader" />
+                <q-btn
+                    :color="openUploader ? 'negative' : 'primary'"
+                    :icon="openUploader ? 'close' : 'upload'"
+                    :label="openUploader ? '關閉上傳' : '新增檔案'"
+                    @click="toggleUploader"
+                />
                 <q-uploader
                     v-if="openUploader"
                     ref="uploader"
