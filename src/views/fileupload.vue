@@ -18,6 +18,12 @@
                     :headers="uploadHeaders"
                     :auto-upload="false"
                     @uploaded="onUploadComplete"
+                    @failed="onUploadFailed"
+                    @added="onFilesAdded"
+                    style="max-width: 300px"
+                    :max-files="10"
+                    :max-file-size="10485760"
+                    @rejected="onFilesRejected"
                 />
             </div>
         </div>
@@ -29,12 +35,13 @@
                 row-key="id"
                 selection="multiple"
                 v-model:selected="selectedRows"
-                :rows-per-page="pagination.rowsPerPage"
                 :pagination.sync="pagination"
+                @request="handlePaginationChange"
                 :loading="loading"
                 :filter="filter"
                 flat
                 class="my-table"
+                binary-state-sort
             >
                 <template v-slot:top>
                     <div class="tw-flex tw-items-center tw-w-full tw-gap-4">
@@ -105,7 +112,7 @@
                 <template #body-cell-name="props">
                     <q-td :props="props">
                         <div class="tw-line-clamp-2 tw-break-words tw-whitespace-normal">
-                            {{ props.row.name }}
+                            {{ props.row.originalName.replace(/\.png$/i, '') }}
                         </div>
                     </q-td>
                 </template>
@@ -116,13 +123,16 @@
                         <q-pagination
                             v-model="pagination.page"
                             :max="pagination.totalPages"
+                            :max-pages="6"
                             boundary-numbers
                             direction-links
                             boundary-links
                             color="primary"
                             size="sm"
                             class="tw-shadow-sm"
-                            @update:model-value="fetchFiles"
+                            @update:model-value="
+                                (page) => handlePaginationChange({ ...pagination, page })
+                            "
                         />
                     </div>
                 </template>
@@ -154,24 +164,22 @@ const pagination = ref({
     page: 1,
     rowsPerPage: 7,
     totalPages: 0,
-    totalRows: 0
+    totalRows: 0,
+    sortBy: 'id',
+    descending: true
 })
 
 // 上傳相關
 const uploader = ref()
 
-// 上傳相關配置
-const uploadHeaders = [
-    {
-        name: 'Accept',
-        value: 'application/json'
-    }
-]
+// 修改上傳配置
+const uploadHeaders = computed(() => [{ name: 'Accept', value: 'application/json' }])
 
 // 計算過濾後的行
 const filteredRows = computed(() => {
+    console.log('過濾前的原始數據:', rows.value)
     const searchTerm = filter.value.toLowerCase()
-    return rows.value.filter((row) => {
+    const filtered = rows.value.filter((row) => {
         const name = row.name?.toLowerCase() || ''
         const type = row.type?.toLowerCase() || ''
         const uploader = row.uploader?.toLowerCase() || ''
@@ -180,45 +188,105 @@ const filteredRows = computed(() => {
             name.includes(searchTerm) || type.includes(searchTerm) || uploader.includes(searchTerm)
         )
     })
+    console.log('過濾後的數據:', filtered)
+    return filtered
 })
+
+// 添加上傳計數器
+const uploadCounter = ref({
+    total: 0,
+    completed: 0,
+    failed: 0
+})
+
+// 重置上傳計數器
+const resetUploadCounter = () => {
+    uploadCounter.value = {
+        total: 0,
+        completed: 0,
+        failed: 0
+    }
+}
 
 // 方法
 const toggleUploader = () => {
     openUploader.value = !openUploader.value
 }
 
+// 修改處理分頁和排序變更的函數
+const handlePaginationChange = async (newPagination: any) => {
+    console.log('分頁或排序變更:', newPagination)
+    // 清空已選擇的行
+    selectedRows.value = []
+    // 更新本地分頁狀態
+    pagination.value = {
+        ...pagination.value,
+        ...newPagination
+    }
+    // 重新獲取數據
+    await fetchFiles()
+}
+
+//  fetchFiles 函數
 const fetchFiles = async () => {
     try {
         loading.value = true
+        console.log('發送請求參數:', {
+            page: pagination.value.page,
+            rowsPerPage: pagination.value.rowsPerPage,
+            sortBy: pagination.value.sortBy,
+            sortOrder: pagination.value.descending ? 'desc' : 'asc'
+        })
+
         const response = await fileApi.getFiles(
             pagination.value.page,
             pagination.value.rowsPerPage,
             {
-                sortBy: 'id',
-                sortOrder: 'desc'
+                sortBy: pagination.value.sortBy || 'id',
+                sortOrder: pagination.value.descending ? 'desc' : 'asc'
             }
         )
 
-        if (pagination.value.page > response.totalPages && response.totalPages > 0) {
-            pagination.value.page = response.totalPages
-            await fetchFiles()
-            return
+        console.log('服務器響應數據:', response)
+
+        if (response && Array.isArray(response.files)) {
+            // 在更新數據之前先打印
+            console.log('原始文件數據:', response.files)
+
+            rows.value = response.files.map((file) => ({
+                id: file.id,
+                name: file.fileName,
+                originalName: file.originalName,
+                type: file.fileType,
+                size: formatFileSize(file.fileSize),
+                uploader: file.uploaderName,
+                status: file.status,
+                uploadDate: file.uploadDate
+            }))
+
+            // 打印轉換後的數據
+            console.log('轉換後的行數據:', rows.value)
+
+            // 更新分頁信息
+            pagination.value = {
+                ...pagination.value,
+                totalPages: response.totalPages,
+                totalRows: response.total,
+                page: response.page || pagination.value.page
+            }
+
+            console.log('更新後的分頁信息:', pagination.value)
+        } else {
+            console.error('無效的響應格式:', response)
+            throw new Error('獲取檔案列表失敗')
         }
-
-        rows.value = response.files.map((file: APIFileResponse) => ({
-            id: file.id,
-            name: file.fileName,
-            type: file.fileType,
-            date: file.uploadDate,
-            size: formatFileSize(file.fileSize),
-            uploader: file.uploaderName,
-            status: file.status
-        }))
-
-        pagination.value.totalRows = response.total
-        pagination.value.totalPages = response.totalPages
     } catch (error) {
-        console.error('獲取檔案列表失敗:', error)
+        console.error('獲取檔案列表錯誤:', error)
+        Notify.create({
+            type: 'negative',
+            message: '獲取檔案列表失敗',
+            timeout: 5000
+        })
     } finally {
         loading.value = false
     }
@@ -262,6 +330,7 @@ const deleteFiles = async (files: FileData[]) => {
                 rows.value = response.data.files.map((file: APIFileResponse) => ({
                     id: file.id,
                     name: file.fileName,
+                    originalName: file.originalName,
                     type: file.fileType,
                     date: file.uploadDate,
                     size: formatFileSize(file.fileSize),
@@ -301,17 +370,110 @@ const resetIdCounter = async () => {
     }
 }
 
-const onUploadComplete = async () => {
-    await new Promise((resolve) => setTimeout(resolve, 500))
-    await fetchFiles()
-    openUploader.value = false
-    Notify.create({
-        type: 'positive',
-        message: '檔案上傳成功'
+// 修改上傳完成處理
+const onUploadComplete = async (info: any) => {
+    console.log('上傳完成信息:', info)
+    try {
+        let response
+        try {
+            response = JSON.parse(info.xhr.response)
+        } catch (e) {
+            console.error('解析響應失敗:', e)
+            uploadCounter.value.failed++
+            throw new Error('服務器響應格式錯誤')
+        }
+
+        if (response.success) {
+            uploadCounter.value.completed++
+        } else {
+            uploadCounter.value.failed++
+            throw new Error(response.detail || '上傳失敗')
+        }
+
+        // 檢查是否所有文件都已處理完成
+        if (
+            uploadCounter.value.completed + uploadCounter.value.failed ===
+            uploadCounter.value.total
+        ) {
+            if (uploadCounter.value.failed > 0) {
+                Notify.create({
+                    type: 'warning',
+                    message: `上傳完成，但有 ${uploadCounter.value.failed} 個文件失敗`,
+                    timeout: 5000
+                })
+            } else {
+                Notify.create({
+                    type: 'positive',
+                    message: '所有檔案上傳成功'
+                })
+            }
+
+            // 所有文件處理完成後才更新列表和關閉上傳器
+            await fetchFiles()
+            openUploader.value = false
+            resetUploadCounter()
+        }
+    } catch (error) {
+        console.error('上傳處理失敗:', error)
+    }
+}
+
+// 修改上傳失敗處理
+const onUploadFailed = (info: any) => {
+    console.error('上傳失敗詳情:', info)
+    uploadCounter.value.failed++
+
+    try {
+        if (info.xhr?.response) {
+            const response = JSON.parse(info.xhr.response)
+            Notify.create({
+                type: 'negative',
+                message: response.detail || response.error || '上傳失敗'
+            })
+            console.error('服務器錯誤詳情:', response)
+        }
+    } catch (error) {
+        console.error('解析錯誤響應失敗:', error)
+    }
+
+    // 檢查是否所有文件都已處理完成
+    if (uploadCounter.value.completed + uploadCounter.value.failed === uploadCounter.value.total) {
+        Notify.create({
+            type: 'warning',
+            message: `上傳完成，但有 ${uploadCounter.value.failed} 個文件失敗`,
+            timeout: 5000
+        })
+        fetchFiles()
+        openUploader.value = false
+        resetUploadCounter()
+    }
+}
+
+// 修改文件添加處理
+const onFilesAdded = (files: any) => {
+    uploadCounter.value.total = files.length
+    console.log('添加的文件數量:', files.length)
+}
+
+const onFilesRejected = (rejectedEntries: any) => {
+    console.log('拒絕的文件:', rejectedEntries)
+    rejectedEntries.forEach((entry: any) => {
+        let message = ''
+        if (entry.failedPropValidation === 'max-file-size') {
+            message = `文件 ${entry.file.name} 超過大小限制 (10MB)`
+        } else if (entry.failedPropValidation === 'max-files') {
+            message = '超過最大文件數量限制 (10個)'
+        } else {
+            message = `文件 ${entry.file.name} 無法上傳`
+        }
+        Notify.create({
+            type: 'negative',
+            message: message
+        })
     })
 }
 
-// 添加 columns 定義
+// 修改 columns 定義
 const columns: ITableColumn[] = [
     {
         name: 'id',
@@ -326,7 +488,7 @@ const columns: ITableColumn[] = [
         required: true,
         label: '檔案名稱',
         align: 'left',
-        field: 'name',
+        field: 'originalName',
         sortable: true,
         style: 'max-width: 250px'
     },
@@ -367,7 +529,8 @@ const columns: ITableColumn[] = [
         required: true,
         label: '操作',
         align: 'center',
-        field: 'actions'
+        field: 'actions',
+        sortable: false
     }
 ]
 
