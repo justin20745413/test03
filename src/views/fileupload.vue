@@ -71,11 +71,11 @@
                     <q-td :props="props">
                         <q-chip
                             :color="
-                                props.row.status === 'success'
+                                props.row.status === '完成'
                                     ? 'positive'
-                                    : props.row.status === 'error'
+                                    : props.row.status === '失敗'
                                       ? 'negative'
-                                      : 'primary'
+                                      : 'secondary'
                             "
                             text-color="white"
                             size="sm"
@@ -119,21 +119,42 @@
 
                 <template v-slot:bottom>
                     <div class="tw-flex tw-justify-between tw-items-center tw-w-full tw-px-4">
-                        <div class="tw-text-gray-600">共 {{ pagination.totalRows }} 個檔案</div>
-                        <q-pagination
-                            v-model="pagination.page"
-                            :max="pagination.totalPages"
-                            :max-pages="6"
-                            boundary-numbers
-                            direction-links
-                            boundary-links
-                            color="primary"
-                            size="sm"
-                            class="tw-shadow-sm"
-                            @update:model-value="
-                                (page) => handlePaginationChange({ ...pagination, page })
-                            "
-                        />
+                        <div class="tw-flex tw-items-center tw-gap-4">
+                            共
+                            <span class="tw-font-bold" color="secondary">
+                                {{ pagination.totalRows }}
+                            </span>
+                            個檔案
+                        </div>
+                        <div class="tw-flex tw-items-center tw-gap-4">
+                            <q-pagination
+                                v-model="pagination.page"
+                                :max="pagination.totalPages"
+                                :max-pages="6"
+                                boundary-numbers
+                                direction-links
+                                boundary-links
+                                color="primary"
+                                size="sm"
+                                class="tw-shadow-sm"
+                                @update:model-value="
+                                    (page) => handlePaginationChange({ ...pagination, page })
+                                "
+                            />
+                            <q-select
+                                v-model="pagination.rowsPerPage"
+                                :options="[3, 5, 7]"
+                                label="每頁顯示"
+                                dense
+                                outlined
+                                options-dense
+                                style="min-width: 100px"
+                                @update:model-value="
+                                    (val) =>
+                                        handlePaginationChange({ ...pagination, rowsPerPage: val })
+                                "
+                            />
+                        </div>
                     </div>
                 </template>
             </q-table>
@@ -554,12 +575,17 @@ onMounted(() => {
     :deep(.q-table thead tr) {
         background-color: #f8fafc;
     }
-
-    :deep(.q-table tbody tr:hover) {
-        background-color: #f1f5f9;
-    }
 }
+
 :deep(.q-table thead th) {
     background-color: var(--q-background) !important;
+}
+
+:deep(.q-table tbody tr:hover) {
+    background-color: #f1f5f9 !important;
+}
+
+:deep(.q-table tbody tr:hover) {
+    background-color: rgba(69, 178, 192, 0.3) !important;
 }
 </style>
