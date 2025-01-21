@@ -2,7 +2,7 @@
     <div class="layoutPageHeader">
         <div class="tw-flex tw-justify-between tw-items-center tw-mb-6">
             <div class="tw-flex tw-items-center">
-                <q-icon name="folder" class="tw-text-primary tw-text-3xl tw-mr-3" />
+                <q-icon name="folder" class="tw-text-primary tw-text-3xl tw-mr-3" size="md" />
                 <span class="tw-text-2xl tw-font-bold">檔案上傳區</span>
             </div>
             <div class="tw-flex tw-flex-col tw-items-end tw-gap-3">
