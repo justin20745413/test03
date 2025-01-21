@@ -49,19 +49,33 @@
                 binary-state-sort
             >
                 <template v-slot:top>
-                    <div class="tw-flex tw-items-center tw-w-full tw-gap-4">
+                    <div class="tw-flex tw-w-full tw-gap-4">
                         <q-input
                             outlined
                             dense
                             debounce="300"
                             v-model="filter"
-                            placeholder="搜尋檔案名稱、類型或上傳者..."
+                            placeholder="搜尋檔案名稱、類型或上傳者...(quasar的q-input)"
                             class="tw-flex-1"
                         >
                             <template v-slot:prepend>
                                 <q-icon name="search" class="tw-text-gray-400" />
                             </template>
                         </q-input>
+                        <div class="tw-relative tw-flex-1">
+                            <input
+                                type="text"
+                                v-model="filter"
+                                placeholder="(原生input)搜尋檔案名稱、類型或上傳者..."
+                                style="background-color: var(--q-dark) var(--ptext-dark)"
+                                class="tw-w-full tw-px-10 tw-py-2 tw-border tw-border-gray-300 tw-rounded-md tw-outline-none focus:tw-border-primary focus:tw-ring-1 focus:tw-ring-primary"
+                            />
+                            <q-icon
+                                name="search"
+                                class="tw-absolute tw-left-3 tw-top-1/2 tw-transform -tw-translate-y-16 tw-text-gray-400"
+                                size="sm"
+                            />
+                        </div>
                         <q-btn
                             v-if="selectedRows.length > 0"
                             color="negative"
@@ -178,6 +192,7 @@ import type { FileData, APIFileResponse } from '../types/fileUpload'
 import { fileApi } from '../services/fileApi'
 import { API_BASE_URL } from '../services/fileApi'
 import type { ITableColumn } from '../types/completeTable'
+import { watch } from 'vue'
 
 // 狀態變數
 const openUploader = ref(false)
@@ -202,14 +217,47 @@ const uploader = ref()
 const uploadHeaders = computed(() => [{ name: 'Accept', value: 'application/json' }])
 
 // 計算過濾後的行
+const debouncedFilter = ref(filter.value)
+let debounceTimeout: NodeJS.Timeout | null = null
+
+// 使用 debounce 函數延遲更新過濾值
+const updateDebouncedFilter = () => {
+    // 清除之前的 timeout
+    if (debounceTimeout) {
+        clearTimeout(debounceTimeout)
+    }
+
+    // 設置新的 timeout
+    debounceTimeout = setTimeout(() => {
+        debouncedFilter.value = filter.value
+    }, 300)
+}
+
+// 監聽 filter 變化
+watch(filter, () => {
+    updateDebouncedFilter()
+})
+
 const filteredRows = computed(() => {
     console.log('過濾前的原始數據:', rows.value)
-    const searchTerm = filter.value.toLowerCase()
+    const searchTerm = debouncedFilter.value.toLowerCase()
     const filtered = rows.value.filter((row) => {
-        const name = row.name?.toLowerCase() || ''
-        const type = row.type?.toLowerCase() || ''
-        const uploader = row.uploader?.toLowerCase() || ''
+        const name = (row.originalName || '').toString().toLowerCase()
+        const type = (row.type || '').toString().toLowerCase()
+        const uploader = (row.uploader || '').toString().toLowerCase()
 
+        const isChinese = /[\u4e00-\u9fa5]/.test(searchTerm)
+
+        if (isChinese) {
+            // 如果是中文,直接比對原始值
+            return (
+                (row.originalName || '').includes(debouncedFilter.value) ||
+                (row.type || '').includes(debouncedFilter.value) ||
+                (row.uploader || '').includes(debouncedFilter.value)
+            )
+        }
+
+        // 如果是英文,比對轉小寫後的值
         return (
             name.includes(searchTerm) || type.includes(searchTerm) || uploader.includes(searchTerm)
         )
