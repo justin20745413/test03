@@ -30,11 +30,11 @@
                     <q-item-section>檔案上傳區</q-item-section>
                 </q-item>
 
-                <q-item clickable v-ripple to="/cropper">
+                <q-item clickable v-ripple to="/Spline">
                     <q-item-section avatar>
                         <q-icon name="crop" />
                     </q-item-section>
-                    <q-item-section>Image Cropper</q-item-section>
+                    <q-item-section>Spline</q-item-section>
                 </q-item>
 
                 <q-item clickable v-ripple to="/practice">

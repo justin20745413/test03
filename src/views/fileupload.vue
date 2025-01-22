@@ -12,7 +12,7 @@
                     :label="openUploader ? '關閉上傳' : '新增檔案'"
                     @click="toggleUploader"
                 />
-                <div v-if="openUploader" class="tw-w-full tw-max-w-[300px]">
+                <div v-if="openUploader" class="tw-w-full tw-max-w-[300px] tw-mr-5">
                     <q-uploader
                         ref="uploader"
                         :url="`${API_BASE_URL}/upload`"
@@ -70,13 +70,19 @@
                             </draggable>
                             <div
                                 v-if="scope.files.length > 0"
-                                class="tw-flex tw-justify-center items-center tw-py-1 tw-bg-red-500 tw-rounded-lg"
+                                class="tw-flex tw-justify-center items-center tw-py-1 tw-bg-gray-500 tw-rounded-lg"
                             >
                                 <q-icon name="bolt" color="white" />
-                                <span class="tw-text-white">到底摟</span>
+                                <span class="tw-text-white">到底拉 Orz...</span>
                             </div>
                         </template>
                     </q-uploader>
+                    <div v-if="openUploader" class="tw-flex tw-items-center tw-justify-end tw-mt-2">
+                        <q-icon name="info" color="primary" />
+                        <span class="tw-text-gray-400 tw-text-xs"
+                            >最多上傳10個檔案，單個檔案最大10MB ~</span
+                        >
+                    </div>
                 </div>
             </div>
         </div>
