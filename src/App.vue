@@ -15,7 +15,7 @@
 <script setup lang="ts">
 import { ref, onMounted, nextTick, watch, provide } from 'vue'
 import { useQuasar } from 'quasar'
-import BackToTop from './components/BackToTop.vue'
+import BackToTop from './components/Button/BackToTop.vue'
 import NavigationDrawer from './layoutTool/NavigationDrawer.vue'
 import Header from './layoutTool/Header.vue'
 

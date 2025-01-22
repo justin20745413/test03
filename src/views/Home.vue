@@ -31,18 +31,22 @@
                 </q-card>
             </div>
 
-            <!-- 添加天氣組件 -->
             <div class="col-12 col-md-6">
+                <!-- 添加天氣組件 -->
                 <q-card flat bordered>
                     <q-card-section>
                         <div class="text-h6 q-mb-md">Weather</div>
                         <WeatherWidget />
                     </q-card-section>
                 </q-card>
+                <!-- 添加Picturebox組件 -->
+                <q-card flat bordered class="tw-mt-4">
+                    <q-card-section>
+                        <div class="text-h6 q-mb-md">Picturebox</div>
+                        <Picturebox />
+                    </q-card-section>
+                </q-card>
             </div>
-
-            <!-- Image Cropper Section -->
-            <div class="col-12 col-md-6"></div>
         </div>
     </div>
 </template>
@@ -53,6 +57,7 @@ import DraggableList from '@/components/DraggableList.vue'
 import ImageCropper from '@/components/ImageCropper.vue'
 import CssIcon from '@/components/CssIcon.vue'
 import WeatherWidget from '@/components/WeatherWidget.vue'
+import Picturebox from '@/components/Picturebox.vue'
 </script>
 
 <style lang="scss" scoped>

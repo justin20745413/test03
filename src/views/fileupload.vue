@@ -82,6 +82,7 @@
                             icon="delete"
                             label="刪除所選"
                             @click="deleteFiles(selectedRows)"
+                            class="tw-max-h-[40px]"
                         />
                     </div>
                 </template>

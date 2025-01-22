@@ -11,6 +11,7 @@
                         />
                         <h3 class="product-title">{{ element.name }}</h3>
                         <p class="product-price">{{ element.price }}</p>
+                        <p class="product-content">{{ element.content }}</p>
                     </div>
                 </template>
             </draggable>
@@ -53,7 +54,13 @@ const products = ref(store.products)
         border-radius: 4px;
     }
 }
-
+.product-price {
+    margin: 10px 0px 10px 0px;
+    font-weight: bold;
+}
+.product-content {
+    font-weight: bold;
+}
 @media (max-width: 768px) {
     .product-grid {
         grid-template-columns: repeat(2, 1fr);
