@@ -42,7 +42,7 @@
                 <!-- 添加Picturebox組件 -->
                 <q-card flat bordered class="tw-mt-4">
                     <q-card-section>
-                        <div class="text-h6 q-mb-md">Picturebox</div>
+                        <div class="text-h6 q-mb-md">Picturebox【use_fileAPI】</div>
                         <Picturebox />
                     </q-card-section>
                 </q-card>

@@ -47,7 +47,7 @@
                 <WeatherChart :latitude="selectedCity.lat" :longitude="selectedCity.lon" />
             </div>
             <div v-else class="error">
-                <i class="fas fa-exclamation-circle"></i>
+                <q-icon name="error"></q-icon>
                 <span>無法獲取天氣資料，請稍後再試。</span>
             </div>
         </div>

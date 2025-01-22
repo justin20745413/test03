@@ -12,24 +12,72 @@
                     :label="openUploader ? '關閉上傳' : '新增檔案'"
                     @click="toggleUploader"
                 />
-                <q-uploader
-                    v-if="openUploader"
-                    ref="uploader"
-                    :url="`${API_BASE_URL}/upload`"
-                    field-name="files"
-                    color="primary"
-                    label="選擇檔案"
-                    multiple
-                    :headers="uploadHeaders"
-                    :auto-upload="false"
-                    @uploaded="onUploadComplete"
-                    @failed="onUploadFailed"
-                    @added="onFilesAdded"
-                    style="max-width: 300px"
-                    :max-files="10"
-                    :max-file-size="10485760"
-                    @rejected="onFilesRejected"
-                />
+                <div v-if="openUploader" class="tw-w-full tw-max-w-[300px]">
+                    <q-uploader
+                        ref="uploader"
+                        :url="`${API_BASE_URL}/upload`"
+                        field-name="files"
+                        color="primary"
+                        label="選擇檔案"
+                        multiple
+                        :headers="uploadHeaders"
+                        :auto-upload="false"
+                        @uploaded="onUploadComplete"
+                        @failed="onUploadFailed"
+                        @added="onFilesAdded"
+                        :max-files="10"
+                        :max-file-size="10485760"
+                        @rejected="onFilesRejected"
+                    >
+                        <template v-slot:list="scope">
+                            <draggable
+                                :list="[...scope.files]"
+                                item-key="name"
+                                handle=".drag-handle"
+                                @start="drag = true"
+                                @end="drag = false"
+                                @change="handleFilesReorder"
+                                class="q-uploader__list"
+                            >
+                                <template #item="{ element: file }">
+                                    <div class="q-uploader__file relative-position">
+                                        <div
+                                            class="drag-handle tw-cursor-move tw-absolute tw-left-2 tw-top-1/2 tw-transform -tw-translate-y-1/2"
+                                        >
+                                            <q-icon
+                                                name="drag_indicator"
+                                                size="sm"
+                                                class="tw-text-gray-400"
+                                            />
+                                        </div>
+                                        <div class="tw-pl-8">
+                                            <div class="q-uploader__file-header">
+                                                <div class="q-uploader__file-name">
+                                                    {{ file.name }}
+                                                </div>
+                                                <div class="q-uploader__file-size">
+                                                    {{ formatFileSize(file.size) }}
+                                                </div>
+                                            </div>
+                                            <q-linear-progress
+                                                v-if="file.__progress"
+                                                :value="file.__progress"
+                                                class="q-mt-xs"
+                                            />
+                                        </div>
+                                    </div>
+                                </template>
+                            </draggable>
+                            <div
+                                v-if="scope.files.length > 0"
+                                class="tw-flex tw-justify-center items-center tw-py-1 tw-bg-red-500 tw-rounded-lg"
+                            >
+                                <q-icon name="bolt" color="white" />
+                                <span class="tw-text-white">到底摟</span>
+                            </div>
+                        </template>
+                    </q-uploader>
+                </div>
             </div>
         </div>
 
@@ -137,6 +185,18 @@
                     </q-td>
                 </template>
 
+                <template #body-cell-img="props">
+                    <q-td :props="props">
+                        <div class="tw-flex tw-justify-center tw-items-center">
+                            <img
+                                :src="getFileUrl(props.row.name)"
+                                class="tw-w-10 tw-h-10"
+                                alt="檔案圖片"
+                            />
+                        </div>
+                    </q-td>
+                </template>
+
                 <template v-slot:bottom>
                     <div class="tw-flex tw-justify-between tw-items-center tw-w-full tw-px-4">
                         <div class="tw-flex tw-items-center tw-gap-4">
@@ -194,6 +254,8 @@ import { fileApi } from '../services/fileApi'
 import { API_BASE_URL } from '../services/fileApi'
 import type { ITableColumn } from '../types/completeTable'
 import { watch } from 'vue'
+import { formatFileSize } from '@/utils/fileSize'
+import draggable from 'vuedraggable'
 
 // 狀態變數
 const openUploader = ref(false)
@@ -240,7 +302,6 @@ watch(filter, () => {
 })
 
 const filteredRows = computed(() => {
-    console.log('過濾前的原始數據:', rows.value)
     const searchTerm = debouncedFilter.value.toLowerCase()
     const filtered = rows.value.filter((row) => {
         const name = (row.originalName || '').toString().toLowerCase()
@@ -263,7 +324,6 @@ const filteredRows = computed(() => {
             name.includes(searchTerm) || type.includes(searchTerm) || uploader.includes(searchTerm)
         )
     })
-    console.log('過濾後的數據:', filtered)
     return filtered
 })
 
@@ -306,12 +366,6 @@ const handlePaginationChange = async (newPagination: any) => {
 const fetchFiles = async () => {
     try {
         loading.value = true
-        console.log('發送請求參數:', {
-            page: pagination.value.page,
-            rowsPerPage: pagination.value.rowsPerPage,
-            sortBy: pagination.value.sortBy,
-            sortOrder: pagination.value.descending ? 'desc' : 'asc'
-        })
 
         const response = await fileApi.getFiles(
             pagination.value.page,
@@ -322,13 +376,11 @@ const fetchFiles = async () => {
             }
         )
 
-        console.log('服務器響應數據:', response)
-
         if (response && Array.isArray(response.files)) {
             // 在更新數據之前先打印
             console.log('原始文件數據:', response.files)
 
-            rows.value = response.files.map((file) => ({
+            rows.value = response.files.map((file: APIFileResponse) => ({
                 id: file.id,
                 name: file.fileName,
                 originalName: file.originalName,
@@ -339,9 +391,6 @@ const fetchFiles = async () => {
                 uploadDate: file.uploadDate
             }))
 
-            // 打印轉換後的數據
-            console.log('轉換後的行數據:', rows.value)
-
             // 更新分頁信息
             pagination.value = {
                 ...pagination.value,
@@ -349,8 +398,6 @@ const fetchFiles = async () => {
                 totalRows: response.total,
                 page: response.page || pagination.value.page
             }
-
-            console.log('更新後的分頁信息:', pagination.value)
         } else {
             console.error('無效的響應格式:', response)
             throw new Error('獲取檔案列表失敗')
@@ -365,14 +412,6 @@ const fetchFiles = async () => {
     } finally {
         loading.value = false
     }
-}
-
-const formatFileSize = (bytes: number): string => {
-    if (bytes === 0) return '0 Bytes'
-    const k = 1024
-    const sizes = ['Bytes', 'KB', 'MB', 'GB']
-    const i = Math.floor(Math.log(bytes) / Math.log(k))
-    return parseFloat((bytes / Math.pow(k, i)).toFixed(2)) + ' ' + sizes[i]
 }
 
 const downloadFile = (fileName: string) => {
@@ -407,10 +446,10 @@ const deleteFiles = async (files: FileData[]) => {
                     name: file.fileName,
                     originalName: file.originalName,
                     type: file.fileType,
-                    date: file.uploadDate,
                     size: formatFileSize(file.fileSize),
                     uploader: file.uploaderName,
-                    status: file.status
+                    status: file.status,
+                    uploadDate: file.uploadDate
                 }))
             }
         }
@@ -451,15 +490,18 @@ const onUploadComplete = async (info: any) => {
     try {
         let response
         try {
+            console.log('原始響應:', info.xhr.response)
             response = JSON.parse(info.xhr.response)
+            console.log('解析後的響應:', response)
         } catch (e) {
             console.error('解析響應失敗:', e)
             uploadCounter.value.failed++
             throw new Error('服務器響應格式錯誤')
         }
 
-        if (response.success) {
+        if (response && response.success && response.files) {
             uploadCounter.value.completed++
+            console.log('文件上傳成功:', response.files)
         } else {
             uploadCounter.value.failed++
             throw new Error(response.detail || '上傳失敗')
@@ -470,26 +512,29 @@ const onUploadComplete = async (info: any) => {
             uploadCounter.value.completed + uploadCounter.value.failed ===
             uploadCounter.value.total
         ) {
-            if (uploadCounter.value.failed > 0) {
-                Notify.create({
-                    type: 'warning',
-                    message: `上傳完成，但有 ${uploadCounter.value.failed} 個文件失敗`,
-                    timeout: 5000
-                })
-            } else {
+            if (uploadCounter.value.completed > 0) {
                 Notify.create({
                     type: 'positive',
-                    message: '所有檔案上傳成功'
+                    message:
+                        uploadCounter.value.failed > 0
+                            ? `上傳完成：${uploadCounter.value.completed} 個成功，${uploadCounter.value.failed} 個失敗`
+                            : '所有檔案上傳成功',
+                    timeout: 5000
                 })
             }
 
-            // 所有文件處理完成後才更新列表和關閉上傳器
+            // 更新列表並重置
             await fetchFiles()
             openUploader.value = false
             resetUploadCounter()
         }
     } catch (error) {
         console.error('上傳處理失敗:', error)
+        Notify.create({
+            type: 'negative',
+            message: (error as Error).message || '上傳處理失敗',
+            timeout: 5000
+        })
     }
 }
 
@@ -499,35 +544,70 @@ const onUploadFailed = (info: any) => {
     uploadCounter.value.failed++
 
     try {
+        let errorMessage = '上傳失敗'
+
+        // 檢查是否有響應內容
         if (info.xhr?.response) {
-            const response = JSON.parse(info.xhr.response)
-            Notify.create({
-                type: 'negative',
-                message: response.detail || response.error || '上傳失敗'
-            })
-            console.error('服務器錯誤詳情:', response)
+            try {
+                const response = JSON.parse(info.xhr.response)
+                errorMessage = response.detail || response.error || '上傳失敗'
+            } catch (e) {
+                console.error('解析響應失敗:', e)
+                errorMessage = '服務器響應格式錯誤'
+            }
+        } else if (info.xhr?.status) {
+            // 處理 HTTP 狀態碼
+            errorMessage = `上傳失敗 (HTTP ${info.xhr.status})`
         }
+
+        // 顯示錯誤通知
+        Notify.create({
+            type: 'negative',
+            message: errorMessage,
+            timeout: 5000
+        })
     } catch (error) {
-        console.error('解析錯誤響應失敗:', error)
+        console.error('處理上傳失敗時出錯:', error)
+        Notify.create({
+            type: 'negative',
+            message: '處理上傳失敗時出錯',
+            timeout: 5000
+        })
     }
 
     // 檢查是否所有文件都已處理完成
     if (uploadCounter.value.completed + uploadCounter.value.failed === uploadCounter.value.total) {
-        Notify.create({
-            type: 'warning',
-            message: `上傳完成，但有 ${uploadCounter.value.failed} 個文件失敗`,
-            timeout: 5000
-        })
-        fetchFiles()
-        openUploader.value = false
-        resetUploadCounter()
+        // 添加延遲以確保狀態更新
+        setTimeout(async () => {
+            await fetchFiles()
+            Notify.create({
+                type: 'warning',
+                message: `上傳完成，但有 ${uploadCounter.value.failed} 個文件失敗`,
+                timeout: 5000
+            })
+            openUploader.value = false
+            resetUploadCounter()
+        }, 500)
     }
+}
+
+// 獲取檔案URL
+const getFileUrl = (fileName: string) => {
+    const url = `${API_BASE_URL}/uploads/${fileName}`
+    return url
 }
 
 // 修改文件添加處理
 const onFilesAdded = (files: any) => {
+    console.log('添加的文件:', files)
     uploadCounter.value.total = files.length
-    console.log('添加的文件數量:', files.length)
+
+    // 確保文件對象包含所有必要屬性
+    files.forEach((file: any) => {
+        if (!file.__key) {
+            file.__key = Date.now() + Math.random().toString(36).substring(2)
+        }
+    })
 }
 
 const onFilesRejected = (rejectedEntries: any) => {
@@ -554,9 +634,17 @@ const columns: ITableColumn[] = [
         name: 'id',
         required: true,
         label: 'ID',
-        align: 'left',
+        align: 'center',
         field: 'id',
         sortable: true
+    },
+    {
+        name: 'img',
+        required: true,
+        label: '圖片',
+        align: 'center',
+        field: 'img',
+        style: 'max-width: 50px'
     },
     {
         name: 'name',
@@ -609,10 +697,72 @@ const columns: ITableColumn[] = [
     }
 ]
 
+// 添加拖拽状态
+const drag = ref(false)
+
 // 初始化
 onMounted(() => {
     fetchFiles()
 })
+
+const handleFilesReorder = (evt: any) => {
+    const uploaderInstance = uploader.value
+
+    if (!uploaderInstance) {
+        console.error('找不到上傳器實例')
+        return
+    }
+
+    // 獲取當前的文件隊列
+    const files = uploaderInstance.files
+
+    // 根據拖拽結果重新排序文件隊列
+    if (evt.moved) {
+        const { newIndex, oldIndex } = evt.moved
+        const fileArray = [...files]
+        const [movedItem] = fileArray.splice(oldIndex, 1)
+        fileArray.splice(newIndex, 0, movedItem)
+
+        // 保存文件的原始屬性
+        const filesWithProps = fileArray.map((file) => ({
+            file,
+            name: file.name,
+            size: file.size,
+            type: file.type,
+            lastModified: file.lastModified,
+            __key: file.__key,
+            __meta: file.__meta
+        }))
+
+        // 清空當前隊列
+        uploaderInstance.reset()
+
+        // 批量添加文件
+        const newFiles = filesWithProps.map(({ file, ...props }) => {
+            const newFile = new File([file], file.name, {
+                type: file.type,
+                lastModified: file.lastModified
+            })
+
+            Object.assign(newFile, {
+                __key: props.__key,
+                __meta: props.__meta
+            })
+
+            return newFile
+        })
+
+        uploaderInstance.addFiles(newFiles)
+
+        setTimeout(() => {
+            Notify.create({
+                type: 'positive',
+                message: '文件順序已更新',
+                timeout: 2000
+            })
+        }, 100)
+    }
+}
 </script>
 
 <style lang="scss" scoped>
@@ -641,5 +791,26 @@ onMounted(() => {
 
 :deep(.q-table tbody tr:hover) {
     background-color: rgba(69, 178, 192, 0.3) !important;
+}
+
+.drag-handle {
+    cursor: move;
+    &:hover {
+        opacity: 0.7;
+    }
+}
+
+:deep(.q-uploader__file) {
+    padding-left: 2rem;
+}
+
+.sortable-drag {
+    opacity: 0.5;
+    background: var(--q-primary) !important;
+}
+
+.sortable-ghost {
+    opacity: 0.5;
+    background: var(--q-primary) !important;
 }
 </style>

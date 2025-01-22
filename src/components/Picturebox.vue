@@ -26,7 +26,7 @@
             }"
             class="mySwiper"
         >
-            <swiper-slide v-for="file in files" :key="file.id" class="swiper-slide">
+            <swiper-slide v-for="file in files" :key="file.id" class="swiper-slide tw-bg-red-500">
                 <div class="slide-content">
                     <img
                         :src="getFileUrl(file.name)"
@@ -55,7 +55,6 @@
             <div class="swiper-button-next">
                 <q-btn icon="chevron_right" flat class="custom-nav-btn"></q-btn>
             </div>
-
             <div class="swiper-pagination"></div>
         </swiper>
     </div>
@@ -70,6 +69,7 @@ import 'swiper/css/effect-coverflow'
 import 'swiper/css/pagination'
 import { fileApi, API_BASE_URL } from '@/services/fileApi'
 import type { FileData } from '@/types/fileUpload'
+import { formatFileSize } from '@/utils/fileSize'
 
 const files = ref<FileData[]>([])
 const modules = [Navigation, Pagination, EffectCoverflow]
@@ -92,19 +92,6 @@ const fetchFiles = async () => {
         }))
     } catch (error) {
         console.error('獲取檔案列表失敗:', error)
-    }
-}
-
-// 添加文件大小格式化函數
-const formatFileSize = (size: number): string => {
-    if (size < 1024) {
-        return size + ' B'
-    } else if (size < 1024 * 1024) {
-        return (size / 1024).toFixed(2) + ' KB'
-    } else if (size < 1024 * 1024 * 1024) {
-        return (size / (1024 * 1024)).toFixed(2) + ' MB'
-    } else {
-        return (size / (1024 * 1024 * 1024)).toFixed(2) + ' GB'
     }
 }
 
@@ -142,26 +129,31 @@ onMounted(() => {
     height: 400px;
     background-position: center;
     background-size: cover;
+    border-radius: 15px;
 }
 
 .slide-content {
     position: relative;
     width: 100%;
     height: 100%;
-    border-radius: 15px;
     overflow: hidden;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    border-radius: 15px;
 }
 
 .carousel-image {
-    width: 100%;
-    height: 100%;
-    object-fit: cover;
+    width: 80%;
+    height: 80%;
+    object-fit: contain;
     transition: transform 0.3s ease;
 }
 
 .carousel-caption {
     position: absolute;
     bottom: 0;
+    border-radius: 15px;
     left: 0;
     right: 0;
     padding: 20px;
