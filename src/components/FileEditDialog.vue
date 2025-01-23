@@ -1,55 +1,112 @@
 <template>
-    <q-dialog v-model="show" persistent>
-        <q-card style="min-width: 350px">
-            <q-card-section class="row items-center">
-                <div class="text-h6">編輯檔案</div>
-                <q-space />
-                <q-btn icon="close" flat round dense v-close-popup />
+    <q-dialog v-model="show" persistent class="file-upload-dialog">
+        <q-card class="dialog-card">
+            <q-card-section class="header">
+                <div class="text-h6 text-primary">編輯檔案</div>
+                <q-btn
+                    icon="close"
+                    flat
+                    round
+                    dense
+                    color="negative"
+                    v-close-popup
+                    class="close-btn"
+                />
             </q-card-section>
 
-            <q-card-section class="q-pt-none">
-                <q-form @submit="handleSubmit" class="tw-space-y-4">
-                    <q-input
-                        v-model="form.originalName"
-                        label="檔案名稱"
-                        :rules="[(val) => !!val || '請輸入檔案名稱']"
-                        outlined
-                        dense
-                    />
+            <q-separator />
 
-                    <q-file
-                        v-model="form.newFile"
-                        label="更換檔案"
-                        outlined
-                        dense
-                        :hint="`當前檔案: ${currentFile?.originalName || ''}`"
-                    >
-                        <template v-slot:prepend>
-                            <q-icon name="attach_file" />
-                        </template>
-                    </q-file>
+            <q-card-section>
+                <q-form @submit="handleSubmit" class="upload-form">
+                    <section class="file-details">
+                        <div class="section-title">檔案資訊</div>
 
-                    <q-select
-                        v-model="form.status"
-                        :options="statusOptions"
-                        label="狀態"
-                        outlined
-                        dense
-                        :rules="[(val) => !!val || '請選擇狀態']"
-                    />
+                        <q-input
+                            v-model="form.originalName"
+                            label="檔案名稱"
+                            :rules="[(val) => !!val || '請輸入檔案名稱']"
+                            outlined
+                            dense
+                            color="primary"
+                        >
+                            <template v-slot:prepend>
+                                <q-icon name="description" color="grey-6" />
+                            </template>
+                        </q-input>
 
-                    <q-input
-                        v-model="form.uploadDate"
-                        label="上傳日期"
-                        outlined
-                        dense
-                        type="datetime-local"
-                        :rules="[(val) => !!val || '請選擇日期']"
-                    />
+                        <q-file
+                            v-model="form.newFile"
+                            label="更換檔案 (選填)"
+                            outlined
+                            dense
+                            color="primary"
+                            clearable
+                        >
+                            <template v-slot:prepend>
+                                <q-icon name="attach_file" color="grey-6" />
+                            </template>
+                        </q-file>
+                        <div class="tw-flex tw-items-center">
+                            <span class="tw-mr-2">目前檔案:</span>
+                            <div>
+                                <q-chip
+                                    v-if="currentFile"
+                                    dense
+                                    outline
+                                    color="primary"
+                                    class="tw-line-clamp-1"
+                                >
+                                    <span>
+                                        {{
+                                            currentFile.originalName.length > 57
+                                                ? currentFile.originalName.substring(0, 57) + '...'
+                                                : currentFile.originalName
+                                        }}</span
+                                    >
+                                </q-chip>
+                            </div>
+                        </div>
+                    </section>
 
-                    <div class="tw-flex tw-justify-end tw-gap-2">
-                        <q-btn label="取消" color="grey" v-close-popup />
-                        <q-btn label="確認" type="submit" color="primary" />
+                    <q-separator spaced />
+
+                    <!-- Status Section -->
+                    <section class="status-details">
+                        <div class="section-title">狀態與日期</div>
+
+                        <q-select
+                            v-model="form.status"
+                            :options="statusOptions"
+                            label="狀態"
+                            outlined
+                            dense
+                            color="primary"
+                            :rules="[(val) => !!val || '請選擇狀態']"
+                        >
+                            <template v-slot:prepend>
+                                <q-icon name="category" color="grey-6" />
+                            </template>
+                        </q-select>
+
+                        <q-input
+                            v-model="form.uploadDate"
+                            label="上傳日期"
+                            outlined
+                            dense
+                            type="datetime-local"
+                            color="primary"
+                            :rules="[(val) => !!val || '請選擇日期']"
+                        >
+                            <template v-slot:prepend>
+                                <q-icon name="event" color="grey-6" />
+                            </template>
+                        </q-input>
+                    </section>
+
+                    <!-- Action Buttons -->
+                    <div class="action-buttons">
+                        <q-btn label="取消" flat color="grey" v-close-popup class="cancel-btn" />
+                        <q-btn label="確認" type="submit" color="primary" class="submit-btn" />
                     </div>
                 </q-form>
             </q-card-section>
@@ -113,3 +170,61 @@ const handleSubmit = () => {
     })
 }
 </script>
+
+<style scoped>
+.file-upload-dialog .dialog-card {
+    min-width: 500px;
+    border-radius: 12px;
+    box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+}
+
+.header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 16px;
+}
+
+.close-btn {
+    transition: background-color 0.3s;
+}
+
+.close-btn:hover {
+    background-color: rgba(0, 0, 0, 0.1);
+}
+
+.upload-form {
+    display: flex;
+    flex-direction: column;
+    gap: 16px;
+}
+
+.section-title {
+    color: var(--q-primary);
+    font-weight: 600;
+    margin-bottom: 8px;
+    font-size: 0.9rem;
+}
+
+.file-details,
+.status-details {
+    display: flex;
+    flex-direction: column;
+    gap: 16px;
+}
+
+.action-buttons {
+    display: flex;
+    justify-content: flex-end;
+    gap: 12px;
+    margin-top: 16px;
+}
+
+.submit-btn {
+    min-width: 100px;
+}
+
+.cancel-btn {
+    min-width: 100px;
+}
+</style>
