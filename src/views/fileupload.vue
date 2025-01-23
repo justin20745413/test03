@@ -79,9 +79,9 @@
                     </q-uploader>
                     <div v-if="openUploader" class="tw-flex tw-items-center tw-justify-end tw-mt-2">
                         <q-icon name="info" color="primary" />
-                        <span class="tw-text-gray-400 tw-text-xs"
-                            >最多上傳10個檔案，單個檔案最大10MB ~</span
-                        >
+                        <span class="tw-text-gray-400 tw-text-xs">
+                            最多上傳10個檔案，單個檔案最大10MB ~
+                        </span>
                     </div>
                 </div>
             </div>
@@ -147,7 +147,7 @@
                             :color="
                                 props.row.status === '完成'
                                     ? 'positive'
-                                    : props.row.status === '失敗'
+                                    : props.row.status === '隱藏'
                                       ? 'negative'
                                       : 'secondary'
                             "
@@ -163,6 +163,14 @@
                 <template #body-cell-actions="props">
                     <q-td :props="props">
                         <div class="tw-flex tw-justify-center tw-gap-2">
+                            <q-btn
+                                flat
+                                round
+                                color="primary"
+                                icon="edit"
+                                size="sm"
+                                @click="editFile(props.row)"
+                            />
                             <q-btn
                                 flat
                                 round
@@ -200,6 +208,12 @@
                                 alt="檔案圖片"
                             />
                         </div>
+                    </q-td>
+                </template>
+
+                <template #body-cell-uploadDate="props">
+                    <q-td :props="props">
+                        {{ new Date(props.row.uploadDate).toLocaleString() }}
                     </q-td>
                 </template>
 
@@ -250,6 +264,12 @@
     <div class="tw-flex tw-justify-end tw-mt-4 tw-mr-6">
         <q-btn label="重置 ID 計數器" color="primary" @click="resetIdCounter" />
     </div>
+
+    <FileEditDialog
+        v-model="editDialog"
+        :current-file="currentEditFile"
+        @submit="handleEditSubmit"
+    />
 </template>
 
 <script setup lang="ts">
@@ -262,6 +282,7 @@ import type { ITableColumn } from '../types/completeTable'
 import { watch } from 'vue'
 import { formatFileSize } from '@/utils/fileSize'
 import draggable from 'vuedraggable'
+import FileEditDialog from '../components/FileEditDialog.vue'
 
 // 狀態變數
 const openUploader = ref(false)
@@ -307,6 +328,7 @@ watch(filter, () => {
     updateDebouncedFilter()
 })
 
+// 添加中英文搜尋功能
 const filteredRows = computed(() => {
     const searchTerm = debouncedFilter.value.toLowerCase()
     const filtered = rows.value.filter((row) => {
@@ -315,9 +337,8 @@ const filteredRows = computed(() => {
         const uploader = (row.uploader || '').toString().toLowerCase()
 
         const isChinese = /[\u4e00-\u9fa5]/.test(searchTerm)
-
+        // 如果是中文,直接比對原始值
         if (isChinese) {
-            // 如果是中文,直接比對原始值
             return (
                 (row.originalName || '').includes(debouncedFilter.value) ||
                 (row.type || '').includes(debouncedFilter.value) ||
@@ -421,7 +442,7 @@ const fetchFiles = async () => {
 }
 
 const downloadFile = (fileName: string) => {
-    window.open(fileApi.downloadFile(fileName), '_blank')
+    window.open(fileApi.downloadFile(fileName), '_self')
 }
 
 const deleteFiles = async (files: FileData[]) => {
@@ -548,7 +569,6 @@ const onUploadComplete = async (info: any) => {
 const onUploadFailed = (info: any) => {
     console.error('上傳失敗詳情:', info)
     uploadCounter.value.failed++
-
     try {
         let errorMessage = '上傳失敗'
 
@@ -659,7 +679,7 @@ const columns: ITableColumn[] = [
         align: 'left',
         field: 'originalName',
         sortable: true,
-        style: 'max-width: 250px'
+        style: 'max-width: 250px;min-width: 250px'
     },
     {
         name: 'type',
@@ -694,6 +714,14 @@ const columns: ITableColumn[] = [
         sortable: true
     },
     {
+        name: 'uploadDate',
+        required: true,
+        label: '上傳時間',
+        align: 'left',
+        field: 'uploadDate',
+        sortable: true
+    },
+    {
         name: 'actions',
         required: true,
         label: '操作',
@@ -705,6 +733,49 @@ const columns: ITableColumn[] = [
 
 // 添加拖拽状态
 const drag = ref(false)
+
+// 編輯相關狀態
+const editDialog = ref(false)
+const currentEditFile = ref<FileData | null>(null)
+
+// 編輯檔案方法
+const editFile = (file: FileData) => {
+    currentEditFile.value = file
+    editDialog.value = true
+}
+
+// 修改處理編輯提交的方法
+const handleEditSubmit = async (formData: any) => {
+    try {
+        if (!currentEditFile.value) return
+
+        const form = new FormData()
+        form.append('originalName', formData.originalName)
+        form.append('uploadDate', new Date(formData.uploadDate).toISOString())
+        form.append('status', formData.status)
+
+        if (formData.newFile) {
+            form.append('file', formData.newFile)
+        }
+
+        const response = await fileApi.updateFile(currentEditFile.value.id, form)
+
+        if (response.success) {
+            Notify.create({
+                type: 'positive',
+                message: '檔案更新成功'
+            })
+            editDialog.value = false
+            await fetchFiles()
+        }
+    } catch (error) {
+        console.error('更新檔案失敗:', error)
+        Notify.create({
+            type: 'negative',
+            message: '更新檔案失敗'
+        })
+    }
+}
 
 // 初始化
 onMounted(() => {

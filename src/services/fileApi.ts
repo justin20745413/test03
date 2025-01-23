@@ -47,6 +47,16 @@ const fileApi = {
     // 重置 ID 計數器
     resetIdCounter: async () => {
         await axios.post(`${API_BASE_URL}/reset-id`)
+    },
+
+    // 更新檔案
+    updateFile: async (fileId: number, formData: FormData) => {
+        const response = await axios.put(`${API_BASE_URL}/files/${fileId}`, formData, {
+            headers: {
+                'Content-Type': 'multipart/form-data'
+            }
+        })
+        return response.data
     }
 }
 

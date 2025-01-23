@@ -39,12 +39,14 @@
                         <p>檔案大小: {{ file.size }}</p>
                         <p>上傳者: {{ file.uploader }}</p>
                         <q-btn
+                            v-if="file.status !== '待審核'"
                             @click="downloadFile(file.name)"
                             color="primary"
                             class="carousel-btn"
                             icon="download"
                             label="下載"
                         />
+                        <p v-else class="pending-text">檔案審核中</p>
                     </div>
                 </div>
             </swiper-slide>
@@ -80,16 +82,18 @@ const fetchFiles = async () => {
         const response = await fileApi.getFiles(1, 7)
         console.log('API 原始響應:', response)
 
-        files.value = response.files.map((file) => ({
-            id: file.id,
-            name: file.fileName,
-            originalName: file.originalName,
-            type: file.fileType,
-            size: formatFileSize(file.fileSize),
-            uploader: file.uploaderName,
-            status: file.status,
-            uploadDate: file.uploadDate
-        }))
+        files.value = response.files
+            .filter((file) => file.status !== '隱藏')
+            .map((file) => ({
+                id: file.id,
+                name: file.fileName,
+                originalName: file.originalName,
+                type: file.fileType,
+                size: formatFileSize(file.fileSize),
+                uploader: file.uploaderName,
+                status: file.status,
+                uploadDate: file.uploadDate
+            }))
     } catch (error) {
         console.error('獲取檔案列表失敗:', error)
     }
@@ -103,7 +107,7 @@ const getFileUrl = (fileName: string) => {
 
 // 下載檔案
 const downloadFile = (fileName: string) => {
-    window.open(fileApi.downloadFile(fileName), '_blank')
+    window.open(fileApi.downloadFile(fileName), '_self')
 }
 
 // 圖片載入失敗時的處理
@@ -212,5 +216,11 @@ onMounted(() => {
     background: none;
     width: auto;
     height: auto;
+}
+
+.pending-text {
+    color: #ffd700;
+    font-style: italic;
+    margin-top: 10px;
 }
 </style>

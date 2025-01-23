@@ -12,12 +12,12 @@
             <div class="card-content">
                 <!-- 商品標題 -->
                 <div class="product-info">
-                    <h2 class="product-title">Limited Edition</h2>
-                    <p class="product-description">Interactive 3D Experience</p>
+                    <h2 class="product-title">VISA CARD</h2>
+                    <p class="product-description">Spotlight animation 3D Experience</p>
                 </div>
 
                 <!-- 3D 模型顯示區 -->
-                <div class="model-container">
+                <div class="model-container tw-border-2 tw-border-white-500">
                     <div class="model-wrapper">
                         <spline-viewer
                             class="spline-interactive_left"
@@ -29,7 +29,7 @@
 
                 <!-- 商品操作區 -->
                 <div class="card-footer">
-                    <span class="price">USD $29990</span>
+                    <span class="price">USD $ 100</span>
                     <button class="buy-button">View Details</button>
                 </div>
             </div>
@@ -45,6 +45,12 @@
             <p class="text-lg text-gray-700 font-medium">
                 spline-viewer: https://app.spline.design/community
             </p>
+            <div class="box1">
+                <div class="box2">
+                    <span class="tw-text-white tw-cursor-default">hover</span><br />
+                    <span class="tw-text-white tw-cursor-default">*before</span>
+                </div>
+            </div>
         </div>
 
         <!-- 商品卡片 -->
@@ -69,7 +75,7 @@
 
                 <!-- 商品操作區 -->
                 <div class="card-footer">
-                    <span class="price">USD $29990</span>
+                    <span class="price">USD $ 29990</span>
                     <button class="buy-button">View Details</button>
                 </div>
             </div>
@@ -91,7 +97,7 @@ onMounted(() => {
         document.head.appendChild(script)
     }
 
-    productSplineUrl_left.value = 'https://prod.spline.design/SEjq3T9BDlFFvtSq/scene.splinecode'
+    productSplineUrl_left.value = 'https://prod.spline.design/4sTUNQQqQCIca1k1/scene.splinecode'
     backgroundSplineUrl.value = 'https://prod.spline.design/bjmbGB6pqr34HMlz/scene.splinecode'
     productSplineUrl.value = 'https://prod.spline.design/NjfJonbV6bUgMXIW/scene.splinecode'
 })
@@ -134,6 +140,25 @@ onMounted(() => {
     perspective: 1000px;
     transition: transform 0.3s ease;
     border-radius: 16px;
+
+    &::before {
+        content: '';
+        position: absolute;
+        top: -50%;
+        left: -34%;
+        width: 200%;
+        height: 200%;
+        background: linear-gradient(
+            45deg,
+            rgba(255, 255, 255, 0.14) 0%,
+            rgba(255, 255, 255, 0.1) 77%,
+            rgba(255, 255, 255, 0.9) 92%,
+            rgba(255, 255, 255, 0) 100%
+        );
+        transform: rotate(-45deg);
+        z-index: 2;
+        pointer-events: none;
+    }
     &:hover {
         transform: translateY(-10px);
         .card-content {
@@ -254,5 +279,88 @@ onMounted(() => {
     &:active {
         transform: translateY(0);
     }
+}
+
+.box1 {
+    position: relative;
+    width: 55px;
+    height: 50px;
+    background: rgb(0, 0, 0);
+}
+
+.box2 {
+    width: 55px;
+    height: 50px;
+    background: rgb(0, 0, 0);
+    border: 1px solid rgb(255, 255, 255);
+}
+
+.box1::before {
+    position: absolute;
+    content: '';
+    width: 40px;
+    height: 0px;
+    background: rgb(0, 68, 255);
+    bottom: 0;
+    left: 80px;
+    transition: height 0.5s;
+    z-index: 4;
+}
+
+.box1:hover {
+    transform: rotate(360deg);
+    transition: transform 0.5s;
+}
+
+.box1:hover::before {
+    height: 30px;
+}
+
+.box1::after {
+    position: absolute;
+    content: '';
+    width: 40px;
+    height: 0px;
+    background: rgb(0, 174, 255);
+    bottom: 0;
+    left: 80px;
+    transition: height 0.5s;
+    z-index: 3;
+}
+
+.box1:hover::after {
+    height: 60px;
+}
+
+.box2::before {
+    position: absolute;
+    content: '';
+    width: 40px;
+    height: 0px;
+    background: rgb(0, 255, 179);
+    bottom: 0;
+    left: 80px;
+    transition: height 0.5s;
+    z-index: 2;
+}
+
+.box2:hover::before {
+    height: 90px;
+}
+
+.box2::after {
+    position: absolute;
+    content: '';
+    width: 40px;
+    height: 0px;
+    background: rgb(27, 228, 0);
+    bottom: 0;
+    left: 80px;
+    transition: height 0.5s;
+    z-index: 1;
+}
+
+.box2:hover::after {
+    height: 120px;
 }
 </style>
