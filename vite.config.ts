@@ -28,5 +28,6 @@ export default defineConfig({
                 additionalData: `@import "@/styles/quasar-variables.scss"\n`
             }
         }
-    }
+    },
+    base: '/test03/'
 })

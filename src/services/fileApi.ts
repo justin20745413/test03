@@ -1,7 +1,7 @@
 import axios from 'axios'
 import type { APIFileResponse } from '../types/fileUpload'
 
-const API_BASE_URL = 'http://localhost:3000/api'
+export const API_BASE_URL = import.meta.env.VITE_API_URL
 
 const fileApi = {
     // 獲取檔案列表（加入分頁和排序參數）
@@ -16,7 +16,7 @@ const fileApi = {
             page: number
             perPage: number
             totalPages: number
-        }>(`${API_BASE_URL}/files`, {
+        }>(`${API_BASE_URL}/api/files`, {
             params: {
                 page,
                 perPage,
@@ -35,7 +35,7 @@ const fileApi = {
 
     // 刪除檔案
     deleteFile: async (fileId: number, page: number, perPage: number) => {
-        const response = await axios.delete(`${API_BASE_URL}/files/${fileId}`, {
+        const response = await axios.delete(`${API_BASE_URL}/api/files/${fileId}`, {
             params: {
                 page,
                 perPage
@@ -46,12 +46,12 @@ const fileApi = {
 
     // 重置 ID 計數器
     resetIdCounter: async () => {
-        await axios.post(`${API_BASE_URL}/reset-id`)
+        await axios.post(`${API_BASE_URL}/api/reset-id`)
     },
 
     // 更新檔案
     updateFile: async (fileId: number, formData: FormData) => {
-        const response = await axios.put(`${API_BASE_URL}/files/${fileId}`, formData, {
+        const response = await axios.put(`${API_BASE_URL}/api/files/${fileId}`, formData, {
             headers: {
                 'Content-Type': 'multipart/form-data'
             }
@@ -60,4 +60,4 @@ const fileApi = {
     }
 }
 
-export { API_BASE_URL, fileApi }
+export { fileApi }

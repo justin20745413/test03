@@ -1,7 +1,6 @@
 import { createApp } from 'vue'
 import { createPinia } from 'pinia'
 import { Quasar, Notify } from 'quasar'
-import VueGtag from 'vue-gtag'
 import VueScrollTo from 'vue-scrollto'
 import { gsap } from 'gsap'
 import router from './router'

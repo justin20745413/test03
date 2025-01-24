@@ -1,5 +1,5 @@
 <template>
-    <q-drawer v-model="leftDrawerOpen as boolean" bordered :width="250" :breakpoint="400">
+    <q-drawer v-model="leftDrawerOpen" bordered :width="250" :breakpoint="400">
         <div class="fixed-navigation tw-flex tw-items-center justify-center">
             <q-icon name="data_thresholding" size="lg"></q-icon>
             <q-item-label header>Navigation Logo</q-item-label>
@@ -50,9 +50,9 @@
 </template>
 
 <script setup lang="ts">
-import { inject } from 'vue'
+import { ref } from 'vue'
 
-const leftDrawerOpen = inject('leftDrawerOpen')
+const leftDrawerOpen = ref(false)
 </script>
 
 <style lang="scss">
