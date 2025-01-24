@@ -72,6 +72,7 @@ import 'swiper/css/pagination'
 import { fileApi, API_BASE_URL } from '@/services/fileApi'
 import type { FileData } from '@/types/fileUpload'
 import { formatFileSize } from '@/utils/fileSize'
+import type { APIFileResponse } from '@/types/fileUpload'
 
 const files = ref<FileData[]>([])
 const modules = [Navigation, Pagination, EffectCoverflow]
@@ -83,8 +84,8 @@ const fetchFiles = async () => {
         console.log('API 原始響應:', response)
 
         files.value = response.files
-            .filter((file) => file.status !== '隱藏')
-            .map((file) => ({
+            .filter((file: APIFileResponse) => file.status !== '隱藏')
+            .map((file: APIFileResponse) => ({
                 id: file.id,
                 name: file.fileName,
                 originalName: file.originalName,
