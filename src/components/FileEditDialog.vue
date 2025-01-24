@@ -105,7 +105,7 @@
 
                     <!-- Action Buttons -->
                     <div class="action-buttons">
-                        <q-btn label="取消" flat color="grey" v-close-popup class="cancel-btn" />
+                        <q-btn label="取消" color="grey" v-close-popup class="cancel-btn" />
                         <q-btn label="確認" type="submit" color="primary" class="submit-btn" />
                     </div>
                 </q-form>

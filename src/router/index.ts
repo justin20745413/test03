@@ -35,4 +35,14 @@ const router = createRouter({
     ]
 })
 
+// After each route change, send a page_view event to Google Analytics
+router.afterEach((to) => {
+    if ((window as any).gtag) {
+        ;(window as any).gtag('event', 'page_view', {
+            page_path: to.fullPath,
+            page_title: to.meta.title || document.title
+        })
+    }
+})
+
 export default router

@@ -1,7 +1,8 @@
 <template>
     <q-drawer v-model="leftDrawerOpen as boolean" bordered :width="250" :breakpoint="400">
-        <div class="fixed-navigation">
-            <q-item-label header>Navigation</q-item-label>
+        <div class="fixed-navigation tw-flex tw-items-center justify-center">
+            <q-icon name="data_thresholding" size="lg"></q-icon>
+            <q-item-label header>Navigation Logo</q-item-label>
         </div>
         <div class="scrollable-content">
             <q-list padding>
