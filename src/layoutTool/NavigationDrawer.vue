@@ -44,6 +44,13 @@
                     </q-item-section>
                     <q-item-section>練習區</q-item-section>
                 </q-item>
+
+                <q-item clickable v-ripple to="/fishweb">
+                    <q-item-section avatar>
+                        <q-icon name="school" />
+                    </q-item-section>
+                    <q-item-section>魚網</q-item-section>
+                </q-item>
             </q-list>
         </div>
     </q-drawer>
