@@ -619,7 +619,7 @@ const onUploadFailed = (info: any) => {
 
 // 獲取檔案URL
 const getFileUrl = (fileName: string) => {
-    const url = `${API_BASE_URL}/uploads/${fileName}`
+    const url = `${API_BASE_URL}/api/uploads/${fileName}`
     return url
 }
 

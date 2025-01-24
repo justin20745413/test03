@@ -30,7 +30,7 @@ const fileApi = {
     // 下載檔案
     downloadFile: (fileName: string) => {
         console.log('fileName', fileName)
-        return `${API_BASE_URL}/download/${encodeURIComponent(fileName)}`
+        return `${API_BASE_URL}/api/download/${encodeURIComponent(fileName)}`
     },
 
     // 刪除檔案

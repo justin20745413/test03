@@ -50,9 +50,10 @@
 </template>
 
 <script setup lang="ts">
-import { ref } from 'vue'
+import { ref, inject } from 'vue'
 
-const leftDrawerOpen = ref(false)
+// 改用 inject 接收共享狀態
+const leftDrawerOpen = inject('leftDrawerOpen', ref(false))
 </script>
 
 <style lang="scss">
