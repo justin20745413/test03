@@ -15,7 +15,7 @@
                 <div v-if="openUploader" class="tw-w-full tw-max-w-[300px] tw-mr-5">
                     <q-uploader
                         ref="uploader"
-                        :url="`${API_BASE_URL}/upload`"
+                        :url="`${API_BASE_URL}/api/upload`"
                         field-name="files"
                         color="primary"
                         label="選擇檔案"
@@ -574,6 +574,7 @@ const onUploadFailed = (info: any) => {
 
         // 檢查是否有響應內容
         if (info.xhr?.response) {
+            console.log('伺服器返回的響應:', info.xhr.response)
             try {
                 const response = JSON.parse(info.xhr.response)
                 errorMessage = response.detail || response.error || '上傳失敗'
