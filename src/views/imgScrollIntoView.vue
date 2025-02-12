@@ -40,8 +40,10 @@
                             >
                                 <img
                                     :class="{
-                                        'tw-transition-all tw-duration-300 tw-filter tw-brightness-90':
-                                            isHoverMap[indexPartItem.indexPartId]
+                                        'tw-transition-all tw-duration-300': true,
+                                        'tw-blur-[5px] tw-brightness-95':
+                                            Object.values(isHoverMap).some((value) => value) &&
+                                            !isHoverMap[indexPartItem.indexPartId]
                                     }"
                                     :src="
                                         getBlockImage(
@@ -54,7 +56,7 @@
                                 <!-- 懸浮效果 -->
                                 <div
                                     v-show="isHoverMap[indexPartItem.indexPartId]"
-                                    class="tw-absolute tw-inset-0 tw-border-2 tw-border-primary/80 tw-rounded-xl tw-backdrop-blur-[2px] tw-transition-all tw-duration-300"
+                                    class="tw-absolute tw-inset-0 tw-border-2 tw-border-primary/80 tw-rounded-xl tw-transition-all tw-duration-300"
                                 ></div>
                                 <!-- 添加標註覆蓋層 -->
                                 <div class="tw-absolute tw-top-4 tw-left-4 tw-flex tw-gap-2">
