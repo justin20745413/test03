@@ -168,7 +168,7 @@
                                         <q-separator color="grey500" spaced vertical />
                                         <div class="tw-ps-2">
                                             <span class="text-grey600 tw-mr-2">主視覺</span>
-                                            <WebColorChip :value="indexPartInfo.webColor" />
+                                            <q-chip :label="indexPartInfo.webColor" />
                                         </div>
                                         <q-separator color="grey500" spaced vertical />
                                     </template>
