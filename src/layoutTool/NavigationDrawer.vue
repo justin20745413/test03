@@ -51,6 +51,13 @@
                     </q-item-section>
                     <q-item-section>魚網</q-item-section>
                 </q-item>
+
+                <q-item clickable v-ripple to="/imgScrollIntoView">
+                    <q-item-section avatar>
+                        <q-icon name="image" />
+                    </q-item-section>
+                    <q-item-section>圖片滾動</q-item-section>
+                </q-item>
             </q-list>
         </div>
     </q-drawer>

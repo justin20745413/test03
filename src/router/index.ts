@@ -5,6 +5,7 @@ import fileupload from '../views/fileupload.vue'
 import PracticeArea from '../views/PracticeArea.vue'
 import Spline from '../views/Spline.vue'
 import fishweb from '../views/fishweb.vue'
+import imgScrollIntoView from '../views/imgScrollIntoView.vue'
 
 const router = createRouter({
     history: createWebHashHistory(import.meta.env.BASE_URL),
@@ -38,6 +39,11 @@ const router = createRouter({
             path: '/fishweb',
             name: 'fishweb',
             component: fishweb
+        },
+        {
+            path: '/imgScrollIntoView',
+            name: 'imgScrollIntoView',
+            component: imgScrollIntoView
         }
     ]
 })
