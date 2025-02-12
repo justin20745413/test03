@@ -56,7 +56,7 @@
                                 <!-- 懸浮效果 -->
                                 <div
                                     v-show="isHoverMap[indexPartItem.indexPartId]"
-                                    class="tw-absolute tw-inset-0 tw-border-2 tw-border-primary/80 tw-rounded-xl tw-transition-all tw-duration-300"
+                                    class="tw-absolute tw-inset-0 tw-border-4 tw-border-primary/80 tw-rounded-xl tw-transition-all tw-duration-300"
                                 ></div>
                                 <!-- 添加標註覆蓋層 -->
                                 <div class="tw-absolute tw-top-4 tw-left-4 tw-flex tw-gap-2">
@@ -166,15 +166,11 @@
                                     </template>
                                     <template v-else>
                                         <q-separator color="grey500" spaced vertical />
-                                        <div class="px-2">
-                                            <span class="text-grey600 mr-2">頁首樣式</span>
-                                            <WebStyleChip :value="indexPartInfo.webStyle" />
-                                        </div>
-                                        <q-separator color="grey500" spaced vertical />
-                                        <div class="ps-2">
-                                            <span class="text-grey600 mr-2">主視覺</span>
+                                        <div class="tw-ps-2">
+                                            <span class="text-grey600 tw-mr-2">主視覺</span>
                                             <WebColorChip :value="indexPartInfo.webColor" />
                                         </div>
+                                        <q-separator color="grey500" spaced vertical />
                                     </template>
                                 </q-toolbar>
                             </q-item-section>
@@ -293,12 +289,43 @@
                                                 <q-separator spaced vertical />
                                                 <div class="tw-px-2">
                                                     <span class="text-primary tw-mr-2">樣式</span>
-                                                    <q-chip :label="element.indexPartStyle" />
+                                                    <q-chip
+                                                        :label="
+                                                            element.indexPartStyle.replace(
+                                                                'STYLE_',
+                                                                ''
+                                                            )
+                                                        "
+                                                        :color="
+                                                            element.indexPartStyle ===
+                                                            IndexPartStyleEnum.STYLE_A
+                                                                ? 'secondary'
+                                                                : 'warning'
+                                                        "
+                                                        text-color="white"
+                                                        class="tw-backdrop-blur-sm"
+                                                    >
+                                                    </q-chip>
                                                 </div>
                                                 <q-separator color="grey500" spaced vertical />
                                                 <div class="tw-px-2">
                                                     <span class="text-primary tw-mr-2">狀態</span>
-                                                    <q-chip :label="element.status" />
+                                                    <q-chip
+                                                        :label="
+                                                            element.status ===
+                                                            IndexPartStatusEnum.ENABLE
+                                                                ? '顯示'
+                                                                : '隱藏'
+                                                        "
+                                                        :color="
+                                                            element.status ===
+                                                            IndexPartStatusEnum.ENABLE
+                                                                ? 'accent'
+                                                                : 'warning'
+                                                        "
+                                                        text-color="white"
+                                                        class="tw-backdrop-blur-sm"
+                                                    />
                                                 </div>
                                                 <q-separator spaced vertical />
                                                 <ArrowForwardRoundButton
@@ -339,7 +366,7 @@ import FormToggle from '@/components/FormToggle.vue'
 
 const q = useQuasar()
 
-// 模擬枚舉
+// 模擬
 enum IndexPartStatusEnum {
     ENABLE = 'ENABLE',
     DISABLE = 'DISABLE'
@@ -354,11 +381,6 @@ enum IndexPartTypeEnum {
 }
 
 enum IndexPartStyleEnum {
-    STYLE_A = 'STYLE_A',
-    STYLE_B = 'STYLE_B'
-}
-
-enum WebStyleEnum {
     STYLE_A = 'STYLE_A',
     STYLE_B = 'STYLE_B'
 }
@@ -380,7 +402,6 @@ const isSaving = ref(false)
 
 // 模擬 indexPartInfo
 const indexPartInfo = ref({
-    webStyle: WebStyleEnum.STYLE_A,
     webColor: WebColorEnum.COLOR_A,
     indexPartList: [
         {
