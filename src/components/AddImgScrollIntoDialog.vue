@@ -11,7 +11,7 @@
                 <!-- ID顯示 -->
                 <div class="tw-flex tw-items-center tw-gap-2">
                     <span class="tw-w-24 tw-text-gray-600">ID：</span>
-                    <span class="tw-text-primary">{{ formData.indexPartId }}</span>
+                    <span class="tw-text-primary">{{ nextId }}</span>
                 </div>
 
                 <!-- 區塊類型選擇 -->
@@ -124,6 +124,7 @@ import { IndexPartStatusEnum, IndexPartTypeEnum } from '@/enum/StatusEnum'
 const props = defineProps<{
     modelValue: boolean
     title?: string
+    nextId: number
 }>()
 
 const emit = defineEmits<{
@@ -148,12 +149,12 @@ const indexPartTypeOptions = [
 ]
 
 const formData = ref({
-    indexPartId: Date.now(),
+    indexPartId: props.nextId,
     customName: '',
     styleAImage: null as File | null,
     styleBImage: null as File | null,
     status: IndexPartStatusEnum.ENABLE,
-    indexPartType: IndexPartTypeEnum.IMAGE_CARD // 添加默認值
+    indexPartType: IndexPartTypeEnum.IMAGE_CARD
 })
 
 // 圖片預覽

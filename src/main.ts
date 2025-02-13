@@ -1,6 +1,6 @@
 import { createApp } from 'vue'
 import { createPinia } from 'pinia'
-import { Quasar, Notify } from 'quasar'
+import { Quasar, Notify, Dialog } from 'quasar'
 import VueScrollTo from 'vue-scrollto'
 import { gsap } from 'gsap'
 import router from './router'
@@ -27,6 +27,7 @@ app.use(createPinia())
 app.use(router)
 app.use(Quasar, {
     plugins: {
+        Dialog,
         Notify
     },
     config: {

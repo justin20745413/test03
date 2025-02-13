@@ -47,11 +47,18 @@
                                     }"
                                     :src="
                                         getBlockImage(
-                                            indexPartItem.indexPartType,
+                                            indexPartItem.indexPartId,
                                             indexPartItem.indexPartStyle
                                         )
                                     "
                                     class="tw-w-full tw-rounded-xl tw-shadow-md tw-transition-transform tw-duration-300 tw-relative"
+                                    @error="
+                                        handleImageError(
+                                            $event,
+                                            indexPartItem.indexPartId,
+                                            indexPartItem.indexPartStyle
+                                        )
+                                    "
                                 />
                                 <!-- 懸浮效果 -->
                                 <div
@@ -94,7 +101,7 @@
                         <template v-if="isEdit">
                             <q-btn
                                 class="add-btn tw-backdrop-blur-sm tw-transition-all"
-                                @click="showAddDialog = true"
+                                @click="openAddDialog"
                             >
                                 <q-icon name="add" class="tw-mr-1" />
                                 新增區塊
@@ -193,8 +200,7 @@
                         <Draggable
                             v-if="displayIndexPartList.length > 0"
                             v-model="displayIndexPartList"
-                            :list="displayIndexPartList"
-                            animation="300"
+                            :animation="300"
                             handle=".dragHandler"
                             item-key="indexPartId"
                             class="tw-space-y-3"
@@ -297,6 +303,18 @@
                                                     "
                                                     :true-value="IndexPartStatusEnum.ENABLE"
                                                 />
+                                                <!-- 添加刪除按鈕 -->
+                                                <q-btn
+                                                    v-if="!element.isCentral"
+                                                    flat
+                                                    round
+                                                    color="negative"
+                                                    icon="delete"
+                                                    class="tw-ml-2"
+                                                    @click.stop="onDeleteBlock(element.indexPartId)"
+                                                >
+                                                    <q-tooltip>刪除區塊</q-tooltip>
+                                                </q-btn>
                                             </template>
                                             <template v-else>
                                                 <q-separator spaced vertical />
@@ -370,12 +388,17 @@
         </q-card>
 
         <!-- 添加 Dialog 組件 -->
-        <AddImgScrollIntoDialog v-model="showAddDialog" title="新增區塊" @submit="onAddBlock" />
+        <AddImgScrollIntoDialog
+            v-model="showAddDialog"
+            :next-id="nextId"
+            title="新增區塊"
+            @submit="onAddBlock"
+        />
     </q-page>
 </template>
 
 <script lang="ts" setup>
-import { ref, watch } from 'vue'
+import { ref, watch, onMounted } from 'vue'
 import Draggable from 'vuedraggable'
 import { useQuasar } from 'quasar'
 import FormToggle from '@/components/FormToggle.vue'
@@ -386,8 +409,12 @@ import {
     WebColorEnum,
     IndexPartTypeEnum
 } from '@/enum/StatusEnum'
+import { imgScrollApi } from '@/services/imgScrollApi'
+import type { IndexPartInfo, IndexPartItem } from '@/types/imgScroll'
 
 const q = useQuasar()
+
+const API_BASE_URL = import.meta.env.VITE_API_URL
 
 // 模擬資料
 const isEdit = ref(false)
@@ -400,80 +427,18 @@ const isSaving = ref(false)
 
 // 新增的狀態和方法
 const showAddDialog = ref(false)
+const nextId = ref(1)
 
-// 模擬 indexPartInfo
-const indexPartInfo = ref({
+// 修改數據加載和保存邏輯
+const indexPartInfo = ref<IndexPartInfo>({
     webColor: WebColorEnum.COLOR_A,
-    indexPartList: [
-        {
-            indexPartId: 1,
-            indexPartType: IndexPartTypeEnum.CAROUSEL,
-            status: IndexPartStatusEnum.ENABLE,
-            customName: '首頁輪播',
-            indexPartStyle: IndexPartStyleEnum.STYLE_A,
-            isCentral: false
-        },
-        {
-            indexPartId: 2,
-            indexPartType: IndexPartTypeEnum.IMAGE_CARD,
-            status: IndexPartStatusEnum.ENABLE,
-            customName: '圖片專區',
-            indexPartStyle: IndexPartStyleEnum.STYLE_B,
-            isCentral: false
-        },
-        {
-            indexPartId: 3,
-            indexPartType: IndexPartTypeEnum.CALENDAR,
-            status: IndexPartStatusEnum.ENABLE,
-            customName: '活動日曆',
-            indexPartStyle: IndexPartStyleEnum.STYLE_A,
-            isCentral: false
-        },
-        {
-            indexPartId: 4,
-            indexPartType: IndexPartTypeEnum.BULLETIN,
-            status: IndexPartStatusEnum.ENABLE,
-            customName: '最新消息',
-            indexPartStyle: IndexPartStyleEnum.STYLE_B,
-            isCentral: false
-        },
-        {
-            indexPartId: 5,
-            indexPartType: IndexPartTypeEnum.POLICY,
-            status: IndexPartStatusEnum.ENABLE,
-            customName: '宣傳服務',
-            indexPartStyle: IndexPartStyleEnum.STYLE_B,
-            isCentral: false
-        }
-    ]
+    indexPartList: []
 })
 
 // 新增原始數據
 const originalData = ref(null)
 
 // 模擬圖片資料
-const mockImages: Record<IndexPartTypeEnum, Record<IndexPartStyleEnum, string>> = {
-    [IndexPartTypeEnum.CAROUSEL]: {
-        [IndexPartStyleEnum.STYLE_A]: 'https://picsum.photos/800/400?random=1',
-        [IndexPartStyleEnum.STYLE_B]: 'https://picsum.photos/800/400?random=2'
-    },
-    [IndexPartTypeEnum.IMAGE_CARD]: {
-        [IndexPartStyleEnum.STYLE_A]: 'https://picsum.photos/800/300?random=3',
-        [IndexPartStyleEnum.STYLE_B]: 'https://picsum.photos/800/300?random=4'
-    },
-    [IndexPartTypeEnum.CALENDAR]: {
-        [IndexPartStyleEnum.STYLE_A]: 'https://picsum.photos/800/500?random=5',
-        [IndexPartStyleEnum.STYLE_B]: 'https://picsum.photos/800/500?random=6'
-    },
-    [IndexPartTypeEnum.BULLETIN]: {
-        [IndexPartStyleEnum.STYLE_A]: 'https://picsum.photos/800/200?random=7',
-        [IndexPartStyleEnum.STYLE_B]: 'https://picsum.photos/800/200?random=8'
-    },
-    [IndexPartTypeEnum.POLICY]: {
-        [IndexPartStyleEnum.STYLE_A]: 'https://picsum.photos/800/350?random=9',
-        [IndexPartStyleEnum.STYLE_B]: 'https://picsum.photos/800/350?random=10'
-    }
-}
 
 // 模擬類型名稱對應
 const indexPartTypeNameMap: Record<IndexPartTypeEnum, string> = {
@@ -489,7 +454,52 @@ const isHoverMap = ref<Record<number, boolean>>({})
 const indexPartRefs = ref<Record<number, any>>({})
 
 // 計算屬性
-const displayIndexPartList = ref(indexPartInfo.value.indexPartList)
+const displayIndexPartList = ref<IndexPartItem[]>([])
+
+// 加載數據
+const loadData = async () => {
+    try {
+        const data = await imgScrollApi.getData()
+        console.log('API 原始響應:', data)
+
+        // 直接使用返回的數據
+        if (data && data.indexPartList) {
+            indexPartInfo.value = {
+                webColor: data.webColor,
+                indexPartList: data.indexPartList
+            }
+            displayIndexPartList.value = data.indexPartList
+
+            // 更新 hover 狀態
+            const newHoverMap: Record<number, boolean> = {}
+            data.indexPartList.forEach((item: IndexPartItem) => {
+                newHoverMap[item.indexPartId] = false
+            })
+            isHoverMap.value = newHoverMap
+
+            // 調試日誌
+            console.log('更新後的數據:', {
+                indexPartInfo: indexPartInfo.value,
+                displayList: displayIndexPartList.value,
+                hoverMap: isHoverMap.value
+            })
+        } else {
+            console.error('無效的數據格式:', data)
+            q.notify({
+                type: 'negative',
+                message: '數據格式錯誤',
+                position: 'top'
+            })
+        }
+    } catch (error) {
+        console.error('加載數據錯誤:', error)
+        q.notify({
+            type: 'negative',
+            message: '加載數據失敗',
+            position: 'top'
+        })
+    }
+}
 
 // 修改 watch 監聽函數，添加對 indexPartStyle 的變化監聽
 watch(
@@ -519,23 +529,18 @@ const onItemHover = (indexPartId: number, hover: boolean) => {
     }, 0)
 }
 
-const getBlockImage = (indexPartType: IndexPartTypeEnum, style: IndexPartStyleEnum): string => {
-    return (
-        mockImages[indexPartType]?.[style] ||
-        mockImages[indexPartType]?.[IndexPartStyleEnum.STYLE_A]
-    )
+const getBlockImage = (indexPartId: number, style: IndexPartStyleEnum): string => {
+    return imgScrollApi.getStyleImageUrl(indexPartId, style)
 }
 
 // 修改 onEdit 函數，確保正確保存原始數據
 const onEdit = () => {
     isEdit.value = true
-    // 深拷貝保存原始數據
     originalData.value = JSON.parse(JSON.stringify(indexPartInfo.value))
     isSame.value = true
 }
 
 const onCancel = () => {
-    // 顯示確認對話框
     if (!isSame.value) {
         q.dialog({
             title: '確認取消',
@@ -543,8 +548,7 @@ const onCancel = () => {
             cancel: true,
             persistent: true
         }).onOk(() => {
-            // 還原數據
-            indexPartInfo.value = JSON.parse(JSON.stringify(originalData.value))
+            loadData()
             isEdit.value = false
             isSame.value = true
         })
@@ -556,20 +560,19 @@ const onCancel = () => {
 const onSave = async () => {
     try {
         isSaving.value = true
-        await new Promise((resolve) => setTimeout(resolve, 1000))
+        const response = await imgScrollApi.updateData(indexPartInfo.value)
 
-        // 成功提示
-        q.notify({
-            type: 'positive',
-            message: '保存成功',
-            position: 'top',
-            timeout: 2000
-        })
-
-        isEdit.value = false
-        isSame.value = true
+        if (response.success) {
+            q.notify({
+                type: 'positive',
+                message: '保存成功',
+                position: 'top',
+                timeout: 2000
+            })
+            isEdit.value = false
+            isSame.value = true
+        }
     } catch (error) {
-        // 錯誤提示
         q.notify({
             type: 'negative',
             message: '保存失敗，請稍後重試',
@@ -586,35 +589,48 @@ const onWebColorChange = (color: WebColorEnum) => {
     indexPartInfo.value.webColor = color
 }
 
-// 添加拖拽結束處理函數
-const onDragEnd = () => {
-    // 如果在編輯模式下，更新 isSame 狀態
-    if (isEdit.value) {
-        isSame.value = JSON.stringify(originalData.value) === JSON.stringify(indexPartInfo.value)
-    }
-}
-
-// 新增的處理函數
+// 修改添加區塊方法
 const onAddBlock = async (formData: any) => {
     try {
-        // 處理新增區塊邏輯
-        const newBlock = {
+        const newBlock: IndexPartItem = {
             indexPartId: formData.indexPartId,
-            indexPartType: IndexPartTypeEnum.IMAGE_CARD, // 預設類型
+            indexPartType: formData.indexPartType,
             status: formData.status,
             customName: formData.customName,
             indexPartStyle: IndexPartStyleEnum.STYLE_A,
             isCentral: false
         }
 
-        displayIndexPartList.value.push(newBlock)
+        // 上傳樣式A圖片
+        if (formData.styleAImage) {
+            await imgScrollApi.uploadStyleImage(
+                newBlock.indexPartId,
+                'STYLE_A',
+                formData.styleAImage
+            )
+        }
 
-        // 成功提示
-        q.notify({
-            type: 'positive',
-            message: '新增成功',
-            position: 'top'
-        })
+        // 上傳樣式B圖片
+        if (formData.styleBImage) {
+            await imgScrollApi.uploadStyleImage(
+                newBlock.indexPartId,
+                'STYLE_B',
+                formData.styleBImage
+            )
+        }
+
+        // 添加新區塊
+        const response = await imgScrollApi.addBlock(newBlock)
+        if (response.success && response.data) {
+            indexPartInfo.value = response.data
+            displayIndexPartList.value = response.data.indexPartList
+
+            q.notify({
+                type: 'positive',
+                message: '新增成功',
+                position: 'top'
+            })
+        }
     } catch (error) {
         q.notify({
             type: 'negative',
@@ -624,10 +640,93 @@ const onAddBlock = async (formData: any) => {
     }
 }
 
+// 修改拖拽結束處理函數
+const onDragEnd = async () => {
+    if (isEdit.value) {
+        indexPartInfo.value.indexPartList = [...displayIndexPartList.value]
+        isSame.value = JSON.stringify(originalData.value) === JSON.stringify(indexPartInfo.value)
+    }
+}
+
 // 模擬管理權限
 const adminStore = {
     canEditIndexPartStyle: (isCentral: boolean) => !isCentral,
     canViewCentralChip: (isCentral: boolean) => isCentral
+}
+
+// 在組件掛載時加載數據
+onMounted(() => {
+    loadData()
+})
+
+// 在 script setup 中添加新的方法
+const getNextId = (): number => {
+    if (!indexPartInfo.value?.indexPartList?.length) return 1
+    const maxId = Math.max(...indexPartInfo.value.indexPartList.map((item) => item.indexPartId))
+    return maxId + 1
+}
+
+// 修改打開對話框的處理方法
+const openAddDialog = () => {
+    nextId.value = getNextId()
+    showAddDialog.value = true
+}
+
+// 修改 onDeleteBlock 方法
+const onDeleteBlock = async (indexPartId: number) => {
+    try {
+        q.dialog({
+            title: '確認刪除',
+            message: '確定要刪除此區塊嗎？此操作無法復原。',
+            persistent: true,
+            ok: {
+                color: 'negative',
+                label: '刪除'
+            },
+            cancel: {
+                flat: true,
+                label: '取消'
+            }
+        }).onOk(async () => {
+            const response = await imgScrollApi.deleteBlock(indexPartId)
+            if (response.success && response.data) {
+                // 更新數據
+                indexPartInfo.value = response.data
+                displayIndexPartList.value = response.data.indexPartList
+
+                q.notify({
+                    type: 'positive',
+                    message: '刪除成功',
+                    position: 'top'
+                })
+            }
+        })
+    } catch (error) {
+        console.error('刪除失敗:', error)
+        q.notify({
+            type: 'negative',
+            message: '刪除失敗',
+            position: 'top'
+        })
+    }
+}
+
+const handleImageError = (event: Event, indexPartId: number, style: string) => {
+    const img = event.target as HTMLImageElement
+    const currentFormat = img.src.split('.').pop()
+    const formats = ['jpg', 'png', 'gif', 'svg']
+
+    // 找到當前格式的索引
+    const currentIndex = formats.indexOf(currentFormat || '')
+
+    // 如果還有下一個格式可以嘗試
+    if (currentIndex < formats.length - 1) {
+        const nextFormat = formats[currentIndex + 1]
+        img.src = `${API_BASE_URL}/api/uploads/imgStyles/${indexPartId}_${style}.${nextFormat}`
+    } else {
+        // 如果所有格式都試過了，顯示預設圖片
+        img.src = 'https://picsum.photos/1000/500' // 或其他預設圖片
+    }
 }
 </script>
 
@@ -739,6 +838,13 @@ const adminStore = {
     &:hover {
         transform: translateY(-2px);
         box-shadow: 0 6px 20px rgba(255, 152, 0, 0.3);
+    }
+}
+
+// 添加刪除按鈕的樣式
+.q-btn[color='negative'] {
+    &:hover {
+        background: rgba(255, 0, 0, 0.1);
     }
 }
 </style>
