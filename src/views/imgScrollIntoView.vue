@@ -67,6 +67,7 @@
                                     >
                                         {{ indexPartTypeNameMap[indexPartItem.indexPartType] }}
                                     </q-chip>
+
                                     <q-chip
                                         color="secondary"
                                         text-color="white"
@@ -74,6 +75,11 @@
                                     >
                                         樣式
                                         {{ indexPartItem.indexPartStyle.replace('STYLE_', '') }}
+                                    </q-chip>
+                                </div>
+                                <div class="tw-absolute tw-bottom-4 tw-right-1">
+                                    <q-chip color="blue" text-color="white">
+                                        {{ indexPartItem.customName }}
                                     </q-chip>
                                 </div>
                             </div>
@@ -86,6 +92,13 @@
                     <!-- 操作按鈕區 -->
                     <div v-if="isEditable" class="tw-flex tw-justify-end tw-gap-4 tw-mb-6">
                         <template v-if="isEdit">
+                            <q-btn
+                                class="add-btn tw-backdrop-blur-sm tw-transition-all"
+                                @click="showAddDialog = true"
+                            >
+                                <q-icon name="add" class="tw-mr-1" />
+                                新增區塊
+                            </q-btn>
                             <q-btn
                                 flat
                                 :disable="isSaving"
@@ -355,6 +368,9 @@
                 </div>
             </div>
         </q-card>
+
+        <!-- 添加 Dialog 組件 -->
+        <AddImgScrollIntoDialog v-model="showAddDialog" title="新增區塊" @submit="onAddBlock" />
     </q-page>
 </template>
 
@@ -363,33 +379,15 @@ import { ref, watch } from 'vue'
 import Draggable from 'vuedraggable'
 import { useQuasar } from 'quasar'
 import FormToggle from '@/components/FormToggle.vue'
+import AddImgScrollIntoDialog from '@/components/AddImgScrollIntoDialog.vue'
+import {
+    IndexPartStatusEnum,
+    IndexPartStyleEnum,
+    WebColorEnum,
+    IndexPartTypeEnum
+} from '@/enum/StatusEnum'
 
 const q = useQuasar()
-
-// 模擬
-enum IndexPartStatusEnum {
-    ENABLE = 'ENABLE',
-    DISABLE = 'DISABLE'
-}
-
-enum IndexPartTypeEnum {
-    CAROUSEL = 'CAROUSEL',
-    IMAGE_CARD = 'IMAGE_CARD',
-    CALENDAR = 'CALENDAR',
-    BULLETIN = 'BULLETIN',
-    POLICY = 'POLICY'
-}
-
-enum IndexPartStyleEnum {
-    STYLE_A = 'STYLE_A',
-    STYLE_B = 'STYLE_B'
-}
-
-enum WebColorEnum {
-    COLOR_A = 'COLOR_A',
-    COLOR_B = 'COLOR_B',
-    COLOR_C = 'COLOR_C'
-}
 
 // 模擬資料
 const isEdit = ref(false)
@@ -399,6 +397,9 @@ const isCurrentAffiliated = ref(false)
 
 // 新增狀態
 const isSaving = ref(false)
+
+// 新增的狀態和方法
+const showAddDialog = ref(false)
 
 // 模擬 indexPartInfo
 const indexPartInfo = ref({
@@ -555,7 +556,6 @@ const onCancel = () => {
 const onSave = async () => {
     try {
         isSaving.value = true
-        // 模擬API調用
         await new Promise((resolve) => setTimeout(resolve, 1000))
 
         // 成功提示
@@ -591,6 +591,36 @@ const onDragEnd = () => {
     // 如果在編輯模式下，更新 isSame 狀態
     if (isEdit.value) {
         isSame.value = JSON.stringify(originalData.value) === JSON.stringify(indexPartInfo.value)
+    }
+}
+
+// 新增的處理函數
+const onAddBlock = async (formData: any) => {
+    try {
+        // 處理新增區塊邏輯
+        const newBlock = {
+            indexPartId: formData.indexPartId,
+            indexPartType: IndexPartTypeEnum.IMAGE_CARD, // 預設類型
+            status: formData.status,
+            customName: formData.customName,
+            indexPartStyle: IndexPartStyleEnum.STYLE_A,
+            isCentral: false
+        }
+
+        displayIndexPartList.value.push(newBlock)
+
+        // 成功提示
+        q.notify({
+            type: 'positive',
+            message: '新增成功',
+            position: 'top'
+        })
+    } catch (error) {
+        q.notify({
+            type: 'negative',
+            message: '新增失敗',
+            position: 'top'
+        })
     }
 }
 
@@ -695,5 +725,20 @@ const adminStore = {
 
 .floating {
     animation: float 3s ease-in-out infinite;
+}
+
+// 新增按鈕樣式
+.add-btn {
+    background: linear-gradient(135deg, #ff9800, #ff5722);
+    color: white;
+    padding: 8px 20px;
+    border-radius: 12px;
+    transition: all 0.3s ease;
+    box-shadow: 0 4px 15px rgba(255, 152, 0, 0.2);
+
+    &:hover {
+        transform: translateY(-2px);
+        box-shadow: 0 6px 20px rgba(255, 152, 0, 0.3);
+    }
 }
 </style>
