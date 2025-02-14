@@ -6,6 +6,7 @@ import PracticeArea from '../views/PracticeArea.vue'
 import Spline from '../views/Spline.vue'
 import fishweb from '../views/fishweb.vue'
 import imgScrollIntoView from '../views/imgScrollIntoView.vue'
+import fireLoading from '../views/fireLoading.vue'
 
 const router = createRouter({
     history: createWebHashHistory(import.meta.env.BASE_URL),
@@ -44,6 +45,11 @@ const router = createRouter({
             path: '/imgScrollIntoView',
             name: 'imgScrollIntoView',
             component: imgScrollIntoView
+        },
+        {
+            path: '/fireLoading',
+            name: 'fireLoading',
+            component: fireLoading
         }
     ]
 })

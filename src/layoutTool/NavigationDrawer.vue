@@ -56,7 +56,14 @@
                     <q-item-section avatar>
                         <q-icon name="image" />
                     </q-item-section>
-                    <q-item-section>圖片滾動</q-item-section>
+                    <q-item-section>自定義圖片滾動</q-item-section>
+                </q-item>
+
+                <q-item clickable v-ripple to="/fireLoading">
+                    <q-item-section avatar>
+                        <q-icon name="image" />
+                    </q-item-section>
+                    <q-item-section>火焰動畫loading畫面</q-item-section>
                 </q-item>
             </q-list>
         </div>
