@@ -51,7 +51,7 @@
                                             indexPartItem.indexPartStyle
                                         )
                                     "
-                                    class="tw-w-full tw-rounded-xl tw-shadow-md tw-transition-transform tw-duration-300 tw-relative"
+                                    class="tw-w-full tw-rounded-xl tw-max-h-[70vh] tw-shadow-md tw-transition-transform tw-duration-300 tw-relative"
                                     @error="
                                         handleImageError(
                                             $event,
