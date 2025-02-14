@@ -8,12 +8,6 @@ enum IndexPartStyleEnum {
     STYLE_B = 'STYLE_B'
 }
 
-enum WebColorEnum {
-    COLOR_A = 'COLOR_A',
-    COLOR_B = 'COLOR_B',
-    COLOR_C = 'COLOR_C'
-}
-
 enum IndexPartTypeEnum {
     CAROUSEL = 'CAROUSEL',
     IMAGE_CARD = 'IMAGE_CARD',
@@ -22,4 +16,4 @@ enum IndexPartTypeEnum {
     POLICY = 'POLICY'
 }
 
-export { IndexPartStatusEnum, IndexPartStyleEnum, WebColorEnum, IndexPartTypeEnum }
+export { IndexPartStatusEnum, IndexPartStyleEnum, IndexPartTypeEnum }

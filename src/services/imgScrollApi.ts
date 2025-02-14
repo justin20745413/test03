@@ -81,6 +81,19 @@ const imgScrollApi = {
         const baseUrl = `${API_BASE_URL}/api/uploads/imgStyles/${indexPartId}_${style}`
         const imageFormats = ['jpg', 'png', 'gif', 'svg']
         return baseUrl + '.' + imageFormats[0]
+    },
+
+    // 添加更新權限的方法
+    updatePermission: async (isCentral: boolean): Promise<ApiResponse<IndexPartInfo>> => {
+        try {
+            const response = await axios.put(`${API_BASE_URL}/api/imgscroll/permission`, {
+                isCentral
+            })
+            return response.data
+        } catch (error) {
+            console.error('更新權限失敗:', error)
+            throw error
+        }
     }
 }
 

@@ -1,9 +1,4 @@
-import {
-    IndexPartStatusEnum,
-    IndexPartStyleEnum,
-    IndexPartTypeEnum,
-    WebColorEnum
-} from '@/enum/StatusEnum'
+import { IndexPartStatusEnum, IndexPartStyleEnum, IndexPartTypeEnum } from '@/enum/StatusEnum'
 
 // 區塊數據接口
 export interface IndexPartItem {
@@ -19,7 +14,7 @@ export interface IndexPartItem {
 
 // 完整數據接口
 export interface IndexPartInfo {
-    webColor: WebColorEnum
+    isCentral: boolean
     indexPartList: IndexPartItem[]
 }
 

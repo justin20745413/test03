@@ -76,7 +76,12 @@
                                     </q-chip>
 
                                     <q-chip
-                                        color="secondary"
+                                        :color="
+                                            indexPartItem.indexPartStyle ===
+                                            IndexPartStyleEnum.STYLE_A
+                                                ? 'secondary'
+                                                : 'warning'
+                                        "
                                         text-color="white"
                                         class="tw-backdrop-blur-sm"
                                     >
@@ -140,55 +145,52 @@
                     <q-list class="tw-space-y-4">
                         <!-- 樣式選擇器 -->
                         <q-item
-                            class="tw-border tw-border-gray-200/80 tw-rounded-xl tw-h-12 tw-px-4 tw-py-2 tw-mb-[10px] tw-bg-white/80 tw-backdrop-blur-sm hover:tw-shadow-md tw-transition-all"
+                            class="tw-border tw-border-gray-200/80 tw-rounded-xl tw-h-12 tw-px-4 tw-py-2 tw-mb-[10px] tw-backdrop-blur-sm hover:tw-shadow-md tw-transition-all"
                         >
                             <q-item-section>
                                 <q-toolbar>
                                     <q-toolbar-title>
-                                        <span class="text-grey800 ellipsis">頁首及主視覺樣式</span>
+                                        <span class="text-grey800 ellipsis">權限管理</span>
                                     </q-toolbar-title>
                                     <template v-if="isEdit">
                                         <div class="flex tw-gap-2">
                                             <q-btn
-                                                :class="{
-                                                    'bg-primary':
-                                                        indexPartInfo.webColor ===
-                                                        WebColorEnum.COLOR_A
-                                                }"
-                                                class="bg-grey-3"
-                                                @click="onWebColorChange(WebColorEnum.COLOR_A)"
+                                                @click="updatePermission(true)"
+                                                :color="indexPartInfo.isCentral ? 'primary' : ''"
+                                                :text-color="
+                                                    indexPartInfo.isCentral ? 'white' : 'black'
+                                                "
                                             >
-                                                A
+                                                最高權限
                                             </q-btn>
                                             <q-btn
-                                                :class="{
-                                                    'bg-primary':
-                                                        indexPartInfo.webColor ===
-                                                        WebColorEnum.COLOR_B
-                                                }"
-                                                class="bg-grey-3"
-                                                @click="onWebColorChange(WebColorEnum.COLOR_B)"
+                                                @click="updatePermission(false)"
+                                                :color="!indexPartInfo.isCentral ? 'primary' : ''"
+                                                :text-color="
+                                                    !indexPartInfo.isCentral ? 'white' : 'gray'
+                                                "
                                             >
-                                                B
-                                            </q-btn>
-                                            <q-btn
-                                                :class="{
-                                                    'bg-primary':
-                                                        indexPartInfo.webColor ===
-                                                        WebColorEnum.COLOR_C
-                                                }"
-                                                class="bg-grey-3"
-                                                @click="onWebColorChange(WebColorEnum.COLOR_C)"
-                                            >
-                                                C
+                                                一般權限
                                             </q-btn>
                                         </div>
                                     </template>
                                     <template v-else>
                                         <q-separator color="grey500" spaced vertical />
                                         <div class="tw-ps-2">
-                                            <span class="text-grey600 tw-mr-2">主視覺</span>
-                                            <q-chip :label="indexPartInfo.webColor" />
+                                            <span class="text-grey600 tw-mr-2">目前權限：</span>
+                                            <q-chip
+                                                :color="
+                                                    indexPartInfo.isCentral
+                                                        ? 'primary'
+                                                        : 'secondary'
+                                                "
+                                                text-color="white"
+                                                :label="
+                                                    indexPartInfo.isCentral
+                                                        ? '最高權限'
+                                                        : '一般權限'
+                                                "
+                                            />
                                         </div>
                                         <q-separator color="grey500" spaced vertical />
                                     </template>
@@ -218,7 +220,7 @@
                                     @mouseover="onItemHover(element.indexPartId, true)"
                                 >
                                     <q-item-section>
-                                        <q-toolbar>
+                                        <q-toolbar class="toolbar_list">
                                             <q-icon
                                                 v-if="isEdit"
                                                 class="dragHandler text-subtle-2"
@@ -228,40 +230,29 @@
                                             />
                                             <q-toolbar-title class="flex items-center">
                                                 <div class="tw-shrink-0 tw-min-w-[320px]">
-                                                    <span
-                                                        :class="{
-                                                            'text-primary':
-                                                                isHoverMap[element.indexPartId]
-                                                        }"
-                                                        class="text-grey800 ellipsis mr-2"
-                                                    >
+                                                    <span class="text-grey800 ellipsis mr-2">
                                                         {{
                                                             indexPartTypeNameMap[
                                                                 element.indexPartType as keyof typeof indexPartTypeNameMap
                                                             ]
                                                         }}
                                                     </span>
-                                                    <span
-                                                        :class="{
-                                                            'text-primary':
-                                                                isHoverMap[element.indexPartId]
-                                                        }"
-                                                        v-if="element.customName"
+                                                    <span v-if="element.customName"
                                                         >（{{ element.customName }}）</span
                                                     >
-                                                    <q-icon
-                                                        name="info"
-                                                        size="18px"
-                                                        color="primary"
-                                                    />
-                                                    <span
-                                                        v-if="
-                                                            adminStore.canViewCentralChip(
-                                                                element.isCentral
-                                                            )
-                                                        "
-                                                    >
-                                                        <CentralChip
+                                                    <q-icon name="info" size="18px" color="primary">
+                                                        <q-tooltip class="bg-warning">
+                                                            <div>
+                                                                <span
+                                                                    >ID:
+                                                                    {{ element.indexPartId }}</span
+                                                                >
+                                                            </div>
+                                                        </q-tooltip>
+                                                    </q-icon>
+                                                    <span v-if="element.isCentral">
+                                                        <q-chip
+                                                            label="最高權限管理"
                                                             :square="false"
                                                             color="grey600"
                                                             size="12px"
@@ -271,11 +262,6 @@
                                             </q-toolbar-title>
                                             <template v-if="isEdit">
                                                 <q-btn-toggle
-                                                    v-if="
-                                                        adminStore.canEditIndexPartStyle(
-                                                            element.isCentral
-                                                        )
-                                                    "
                                                     v-model="element.indexPartStyle"
                                                     :options="[
                                                         {
@@ -305,7 +291,6 @@
                                                 />
                                                 <!-- 添加刪除按鈕 -->
                                                 <q-btn
-                                                    v-if="!element.isCentral"
                                                     flat
                                                     round
                                                     color="negative"
@@ -359,23 +344,6 @@
                                                     />
                                                 </div>
                                                 <q-separator spaced vertical />
-                                                <ArrowForwardRoundButton
-                                                    v-if="
-                                                        adminStore.canEditIndexPartStyle(
-                                                            element.isCentral
-                                                        )
-                                                    "
-                                                    color="grey800"
-                                                    flat
-                                                    @click="() => (isEdit = true)"
-                                                />
-                                                <LockRoundButton
-                                                    v-else
-                                                    color="grey800"
-                                                    disabled
-                                                    flat
-                                                    tooltip="無法使用"
-                                                />
                                             </template>
                                         </q-toolbar>
                                     </q-item-section>
@@ -403,12 +371,7 @@ import Draggable from 'vuedraggable'
 import { useQuasar } from 'quasar'
 import FormToggle from '@/components/FormToggle.vue'
 import AddImgScrollIntoDialog from '@/components/AddImgScrollIntoDialog.vue'
-import {
-    IndexPartStatusEnum,
-    IndexPartStyleEnum,
-    WebColorEnum,
-    IndexPartTypeEnum
-} from '@/enum/StatusEnum'
+import { IndexPartStatusEnum, IndexPartStyleEnum, IndexPartTypeEnum } from '@/enum/StatusEnum'
 import { imgScrollApi } from '@/services/imgScrollApi'
 import type { IndexPartInfo, IndexPartItem } from '@/types/imgScroll'
 
@@ -420,7 +383,6 @@ const API_BASE_URL = import.meta.env.VITE_API_URL
 const isEdit = ref(false)
 const isEditable = ref(true)
 const isSame = ref(true)
-const isCurrentAffiliated = ref(false)
 
 // 新增狀態
 const isSaving = ref(false)
@@ -431,7 +393,7 @@ const nextId = ref(1)
 
 // 修改數據加載和保存邏輯
 const indexPartInfo = ref<IndexPartInfo>({
-    webColor: WebColorEnum.COLOR_A,
+    isCentral: false,
     indexPartList: []
 })
 
@@ -462,17 +424,25 @@ const loadData = async () => {
         const data = await imgScrollApi.getData()
         console.log('API 原始響應:', data)
 
-        // 直接使用返回的數據
         if (data && data.indexPartList) {
             indexPartInfo.value = {
-                webColor: data.webColor,
+                isCentral: data.isCentral,
                 indexPartList: data.indexPartList
             }
-            displayIndexPartList.value = data.indexPartList
+
+            // 根據權限過濾顯示列表
+            displayIndexPartList.value = data.indexPartList.filter((item) => {
+                // 如果全局權限是最高權限，顯示所有項目
+                if (data.isCentral) {
+                    return true
+                }
+                // 如果全局權限是一般權限，只顯示非最高權限的項目
+                return !item.isCentral
+            })
 
             // 更新 hover 狀態
             const newHoverMap: Record<number, boolean> = {}
-            data.indexPartList.forEach((item: IndexPartItem) => {
+            displayIndexPartList.value.forEach((item: IndexPartItem) => {
                 newHoverMap[item.indexPartId] = false
             })
             isHoverMap.value = newHoverMap
@@ -503,7 +473,7 @@ const loadData = async () => {
 
 // 修改 watch 監聽函數，添加對 indexPartStyle 的變化監聽
 watch(
-    [displayIndexPartList, () => indexPartInfo.value.webColor],
+    [displayIndexPartList, () => indexPartInfo.value.isCentral],
     () => {
         // 當任何相關數據變化時，比較當前數據和原始數據
         if (originalData.value) {
@@ -571,6 +541,7 @@ const onSave = async () => {
             })
             isEdit.value = false
             isSame.value = true
+            loadData()
         }
     } catch (error) {
         q.notify({
@@ -582,11 +553,6 @@ const onSave = async () => {
     } finally {
         isSaving.value = false
     }
-}
-
-const onWebColorChange = (color: WebColorEnum) => {
-    if (isCurrentAffiliated.value) return
-    indexPartInfo.value.webColor = color
 }
 
 // 修改添加區塊方法
@@ -646,12 +612,6 @@ const onDragEnd = async () => {
         indexPartInfo.value.indexPartList = [...displayIndexPartList.value]
         isSame.value = JSON.stringify(originalData.value) === JSON.stringify(indexPartInfo.value)
     }
-}
-
-// 模擬管理權限
-const adminStore = {
-    canEditIndexPartStyle: (isCentral: boolean) => !isCentral,
-    canViewCentralChip: (isCentral: boolean) => isCentral
 }
 
 // 在組件掛載時加載數據
@@ -726,6 +686,27 @@ const handleImageError = (event: Event, indexPartId: number, style: string) => {
     } else {
         // 如果所有格式都試過了，顯示預設圖片
         img.src = 'https://picsum.photos/1000/500' // 或其他預設圖片
+    }
+}
+
+const updatePermission = async (isCentral: boolean) => {
+    try {
+        const response = await imgScrollApi.updatePermission(isCentral)
+        if (response.success && response.data) {
+            indexPartInfo.value = response.data
+            q.notify({
+                type: 'positive',
+                message: '權限更新成功',
+                position: 'top'
+            })
+        }
+    } catch (error) {
+        console.error('更新權限失敗:', error)
+        q.notify({
+            type: 'negative',
+            message: '更新權限失敗',
+            position: 'top'
+        })
     }
 }
 </script>
@@ -846,5 +827,9 @@ const handleImageError = (event: Event, indexPartId: number, style: string) => {
     &:hover {
         background: rgba(255, 0, 0, 0.1);
     }
+}
+
+.toolbar_list:hover {
+    background: linear-gradient(135deg, #5a9bf1, #f1c0b1);
 }
 </style>
