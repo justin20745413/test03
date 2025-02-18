@@ -1,8 +1,8 @@
 <template>
     <div class="weather-container">
         <div class="weather-card">
-            <h2 class="weather-title">天氣資訊</h2>
             <div class="weather-header">
+                <h2 class="weather-title">天氣資訊</h2>
                 <div class="flex tw-gap-2">
                     <select v-model="selectedDate" class="city-select">
                         <option v-for="date in WEEK_DATES" :key="date.value" :value="date.value">
@@ -169,7 +169,6 @@ onMounted(() => {
 .weather-title {
     color: #2c3e50;
     font-size: 1.8rem;
-    margin-bottom: 2rem;
     font-weight: 600;
 }
 
@@ -344,6 +343,13 @@ onMounted(() => {
     justify-content: space-between;
     align-items: center;
     margin-bottom: 2rem;
+}
+
+@media (max-width: 600px) {
+    .weather-header {
+        flex-direction: column;
+        gap: 1rem;
+    }
 }
 
 .city-select {
