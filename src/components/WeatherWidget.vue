@@ -1,8 +1,8 @@
 <template>
     <div class="weather-container">
         <div class="weather-card">
+            <h2 class="weather-title">天氣資訊</h2>
             <div class="weather-header">
-                <h2 class="weather-title">天氣資訊</h2>
                 <div class="flex tw-gap-2">
                     <select v-model="selectedDate" class="city-select">
                         <option v-for="date in WEEK_DATES" :key="date.value" :value="date.value">
