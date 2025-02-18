@@ -24,10 +24,13 @@ const fetchForecastData = async () => {
         if (!response.ok) throw new Error('無法獲取預報數據')
 
         const data = await response.json()
-        
+
         // 計算選擇日期與今天的差異天數
         const today = new Date().getDay() || 7 // 將週日的0轉換為7
-        const selectedDay = ['monday', 'tuesday', 'wednesday', 'thursday', 'friday', 'saturday', 'sunday'].indexOf(props.selectedDate) + 1
+        const selectedDay =
+            ['monday', 'tuesday', 'wednesday', 'thursday', 'friday', 'saturday', 'sunday'].indexOf(
+                props.selectedDate
+            ) + 1
         const dayDiff = selectedDay - today
         const hourOffset = dayDiff * 24
 
