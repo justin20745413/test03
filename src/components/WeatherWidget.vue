@@ -3,11 +3,18 @@
         <div class="weather-card">
             <div class="weather-header">
                 <h2 class="weather-title">天氣資訊</h2>
-                <select v-model="selectedCity" class="city-select">
-                    <option v-for="city in TAIWAN_CITIES" :key="city.name" :value="city">
-                        {{ city.name }}
-                    </option>
-                </select>
+                <div class="flex tw-gap-2">
+                    <select v-model="selectedDate" class="city-select">
+                        <option v-for="date in WEEK_DATES" :key="date.value" :value="date.value">
+                            {{ date.label }} --- ({{ date.date }})
+                        </option>
+                    </select>
+                    <select v-model="selectedCity" class="city-select">
+                        <option v-for="city in TAIWAN_CITIES" :key="city.name" :value="city">
+                            {{ city.name }}
+                        </option>
+                    </select>
+                </div>
             </div>
             <div v-if="isLoading" class="loading">
                 <div class="water"></div>
@@ -44,7 +51,11 @@
                         </div>
                     </div>
                 </div>
-                <WeatherChart :latitude="selectedCity.lat" :longitude="selectedCity.lon" />
+                <WeatherChart
+                    :latitude="selectedCity.lat"
+                    :longitude="selectedCity.lon"
+                    :selected-date="selectedDate"
+                />
             </div>
             <div v-else class="error">
                 <q-icon name="error"></q-icon>
@@ -58,12 +69,16 @@
 import { ref, onMounted, watch } from 'vue'
 import WeatherChart from './WeatherChart.vue'
 import { TAIWAN_CITIES } from '@/constants/cities'
+import { WEEK_DATES } from '@/constants/weekDate'
 import { WEATHER_MAP } from '@/constants/weatherCodes'
 import type { WeatherData } from '@/types/weather'
 import type { City } from '@/constants/cities'
 import type { WeatherInfo } from '@/constants/weatherCodes'
 
 const selectedCity = ref<City>(TAIWAN_CITIES[0])
+const todayWeekday =
+    new Date().getDay() === 0 ? 'sunday' : WEEK_DATES[new Date().getDay() - 1].value
+const selectedDate = ref<string>(todayWeekday)
 const isLoading = ref(true)
 const weatherData = ref<WeatherData | null>(null)
 
@@ -75,7 +90,7 @@ const getWeatherInfo = (weatherCode: number): WeatherInfo => {
 const fetchWeatherData = async () => {
     try {
         const response = await fetch(
-            `https://api.open-meteo.com/v1/forecast?latitude=${selectedCity.value.lat}&longitude=${selectedCity.value.lon}&current=temperature_2m,relative_humidity_2m,apparent_temperature,weather_code,wind_speed_10m&timezone=Asia%2FTaipei`
+            `https://api.open-meteo.com/v1/forecast?latitude=${selectedCity.value.lat}&longitude=${selectedCity.value.lon}&daily=temperature_2m_max,temperature_2m_min,apparent_temperature_max,relative_humidity_2m_max,weather_code,wind_speed_10m_max&current=temperature_2m,relative_humidity_2m,apparent_temperature,weather_code,wind_speed_10m&timezone=Asia%2FTaipei`
         )
 
         if (!response.ok) {
@@ -83,17 +98,38 @@ const fetchWeatherData = async () => {
         }
 
         const data = await response.json()
-        const current = data.current
-        const weatherInfo = getWeatherInfo(current.weather_code)
 
-        weatherData.value = {
-            city: selectedCity.value.name,
-            currentTemp: Math.round(current.temperature_2m),
-            description: weatherInfo.description,
-            humidity: current.relative_humidity_2m,
-            icon: weatherInfo.icon,
-            windSpeed: current.wind_speed_10m,
-            feelsLike: Math.round(current.apparent_temperature)
+        // 獲取選擇的日期在一週中的索引
+        const today = new Date().getDay() - 1 // 0 為星期一
+        const selectedIndex = WEEK_DATES.findIndex((d) => d.value === selectedDate.value)
+        const dayDiff = selectedIndex - today
+
+        // 如果是當天，使用current數據，否則使用daily數據
+        if (dayDiff === 0) {
+            const weatherInfo = getWeatherInfo(data.current.weather_code)
+            weatherData.value = {
+                city: selectedCity.value.name,
+                currentTemp: Math.round(data.current.temperature_2m),
+                description: weatherInfo.description,
+                humidity: data.current.relative_humidity_2m,
+                icon: weatherInfo.icon,
+                windSpeed: data.current.wind_speed_10m,
+                feelsLike: Math.round(data.current.apparent_temperature)
+            }
+        } else {
+            // 使用daily數據中對應日期的數據
+            const dailyIndex = dayDiff > 0 ? dayDiff : dayDiff + 7
+
+            const weatherInfo = getWeatherInfo(data.daily.weather_code[dailyIndex])
+            weatherData.value = {
+                city: selectedCity.value.name,
+                currentTemp: Math.round(data.daily.temperature_2m_max[dailyIndex]),
+                description: weatherInfo.description,
+                humidity: data.daily.relative_humidity_2m_max[dailyIndex],
+                icon: weatherInfo.icon,
+                windSpeed: data.daily.wind_speed_10m_max[dailyIndex],
+                feelsLike: Math.round(data.daily.apparent_temperature_max[dailyIndex])
+            }
         }
 
         isLoading.value = false
@@ -104,8 +140,8 @@ const fetchWeatherData = async () => {
     }
 }
 
-// 監聽城市變化
-watch(selectedCity, () => {
+// 監聽城市和日期變化
+watch([selectedCity, selectedDate], () => {
     isLoading.value = true
     fetchWeatherData()
 })

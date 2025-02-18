@@ -3,12 +3,13 @@
 </template>
 
 <script setup lang="ts">
-import { ref, onMounted, onUnmounted } from 'vue'
+import { ref, onMounted, onUnmounted, watch } from 'vue'
 import * as echarts from 'echarts'
 
 const props = defineProps<{
     latitude: number
     longitude: number
+    selectedDate: string
 }>()
 
 const chartRef = ref<HTMLElement | null>(null)
@@ -23,8 +24,17 @@ const fetchForecastData = async () => {
         if (!response.ok) throw new Error('無法獲取預報數據')
 
         const data = await response.json()
-        const temps = data.hourly.temperature_2m.slice(0, 24) // 只取未來24小時
-        const times = data.hourly.time.slice(0, 24).map((time: string) => {
+        
+        // 計算選擇日期與今天的差異天數
+        const today = new Date().getDay() || 7 // 將週日的0轉換為7
+        const selectedDay = ['monday', 'tuesday', 'wednesday', 'thursday', 'friday', 'saturday', 'sunday'].indexOf(props.selectedDate) + 1
+        const dayDiff = selectedDay - today
+        const hourOffset = dayDiff * 24
+
+        // 根據選擇的日期獲取對應的24小時數據
+        const startIndex = hourOffset < 0 ? hourOffset + 168 : hourOffset // 如果是過去的日期，則從下週同一天開始計算
+        const temps = data.hourly.temperature_2m.slice(startIndex, startIndex + 24)
+        const times = data.hourly.time.slice(startIndex, startIndex + 24).map((time: string) => {
             return new Date(time).getHours() + '時'
         })
 
@@ -99,6 +109,11 @@ const initChart = (times: string[], temperatures: number[]) => {
 
     chart.setOption(option)
 }
+
+// 監聽 props 變化
+watch([() => props.latitude, () => props.longitude, () => props.selectedDate], () => {
+    fetchForecastData()
+})
 
 onMounted(() => {
     fetchForecastData()
