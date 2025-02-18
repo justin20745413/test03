@@ -23,6 +23,7 @@
         "pinia": "^2.1.7",
         "quasar": "^2.14.6",
         "swiper": "^11.0.6",
+        "three": "^0.173.0",
         "vue": "^3.4.38",
         "vue-cropper": "^1.1.1",
         "vue-gtag": "^2.0.1",
@@ -33,6 +34,7 @@
     "devDependencies": {
         "@quasar/vite-plugin": "^1.8.1",
         "@types/node": "^22.10.2",
+        "@types/three": "^0.173.0",
         "@typescript-eslint/eslint-plugin": "^7.1.0",
         "@typescript-eslint/parser": "^7.1.0",
         "@vitejs/plugin-vue": "^5.1.3",
