@@ -1,9 +1,19 @@
 <template>
     <div class="container">
-        <div v-if="phase === 1" class="loading-container">
+        <!-- 添加開始頁面 -->
+        <div v-if="!started" class="start-page">
+            <p><q-icon name="local_fire_department" /> 燃燒動畫效果</p>
+            <span
+                >點擊下方按鈕，體驗真實的燃燒效果！隨著火焰蔓延，白色紙張逐漸消失，隱藏於底層的畫面將神秘浮現。每一次燃燒的路徑都是獨特的，營造出視覺震撼的交錯感。感受火焰的魅力，探索光與影的變化，創造屬於你的獨特體驗！</span
+            >
+            <button class="start-btn" @click="handleStart">Start</button>
+        </div>
+
+        <!-- 原有內容 -->
+        <div v-if="phase === 1 && started" class="loading-container">
             <div class="loading"></div>
         </div>
-        <canvas ref="canvasRef"></canvas>
+        <canvas ref="canvasRef" v-show="started"></canvas>
     </div>
 </template>
 
@@ -35,6 +45,9 @@ let shapeMask = []
 // 添加背景圖片相關變數
 const bgImage = ref(null)
 
+// 添加開始狀態控制
+const started = ref(false)
+
 /**
  * 兩組不同的「燃燒參數」
  * -------------------------
@@ -49,12 +62,12 @@ const stepOneSettings = reactive({
     randomSize: 40 // 減少隨機大小範圍，使燃燒更快開始
 })
 const stepTwoSettings = reactive({
-    Burns: 30, // 增加起火點數量
+    Burns: 8, // 增加起火點數量
     Color: true,
     burnColor: '#FFFFFF',
-    baseSpeed: 12, // 提高基礎速度
-    speedVariation: 10, // 增加速度變化
-    randomSize: 60 // 減少隨機大小範圍，使燃燒更快開始
+    baseSpeed: 8, // 提高基礎速度
+    speedVariation: 16, // 增加速度變化
+    randomSize: 50 // 減少隨機大小範圍，使燃燒更快開始
 })
 
 /**
@@ -396,6 +409,18 @@ function checkBurningPhase() {
     }
 }
 
+// 添加開始按鈕處理函數
+function handleStart() {
+    started.value = true
+    // 等待下一幀再初始化，確保 canvas 已經顯示
+    requestAnimationFrame(() => {
+        setupCanvas()
+        initMapData()
+        initBurningPhase(true)
+        render()
+    })
+}
+
 /**
  * ------------- 初始化和啟動 -------------
  */
@@ -407,21 +432,10 @@ onMounted(() => {
     bgImage.value = new Image()
     bgImage.value.src = new URL('@/assets/bg-fire.jpg', import.meta.url).href
 
-    // 等待圖片加載完成後再初始化
+    // 等待圖片加載完成
     bgImage.value.onload = () => {
-        console.log('背景圖片加載完成') // 添加調試日誌
-
-        // 設置畫布尺寸
-        setupCanvas()
-
-        // 初始化地圖數據
-        initMapData()
-
-        // 開始第一階段燃燒
-        initBurningPhase(true)
-
-        // 開始渲染循環
-        render()
+        console.log('背景圖片加載完成')
+        // 不再自動開始動畫，等待用戶點擊開始按鈕
     }
 })
 
@@ -552,5 +566,52 @@ canvas {
     .loading {
         font-size: 24px;
     }
+}
+
+/* 添加開始頁面樣式 */
+.start-page {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+    background-color: rgba(0, 0, 0, 0.8);
+    color: white;
+    z-index: 1000;
+}
+
+.start-page p {
+    font-size: 1.2rem;
+    color: var(--q-primary);
+}
+.start-page span {
+    font-size: 1.2rem;
+    color: var(--q-primary);
+    line-height: 1.5;
+    width: 25%;
+    flex-wrap: wrap;
+    margin-bottom: 1rem;
+    background: #ffffff;
+    padding: 1rem;
+    border-radius: 1rem;
+}
+
+.start-btn {
+    padding: 0.2rem 1rem;
+    font-size: 1.5rem;
+    background-color: #ffffff;
+    color: #000000;
+    border: none;
+    border-radius: 5px;
+    cursor: pointer;
+    transition: transform 0.2s;
+}
+
+.start-btn:hover {
+    transform: scale(1.05);
 }
 </style>
