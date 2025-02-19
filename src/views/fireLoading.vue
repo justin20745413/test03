@@ -84,15 +84,15 @@ const stepOneSettings = reactive({
     burnColor: '#FFFFFF',
     baseSpeed: 1, // 提高基礎速度
     speedVariation: 1, // 速度變化
-    randomSize: 40 // 減少隨機大小範圍，使燃燒更快開始
+    randomSize: 10 // 減少隨機大小範圍，使燃燒更快開始
 })
 const stepTwoSettings = reactive({
-    Burns: 16, // 增加起火點數量
+    Burns: 15, // 降低起火點數量，避免太多點同時燃燒造成卡頓
     Color: true,
     burnColor: '#FFFFFF',
-    baseSpeed: 6, // 提高基礎速度
-    speedVariation: 20, // 增加速度變化
-    randomSize: 60 // 減少隨機大小範圍，使燃燒更快開始
+    baseSpeed: 2, // 降低基礎速度，使動畫更平滑
+    speedVariation: 35, // 降低速度變化範圍，使燃燒更均勻
+    randomSize: 60 // 減小隨機大小範圍，使燃燒更集中
 })
 
 /**
