@@ -273,40 +273,22 @@ function initBurningPhase(inShape = true) {
     const width = canvas.width
     const height = canvas.height
 
+    // 看目前 phase，拿對應的設定
     const currentSettings = phase.value === 1 ? stepOneSettings : stepTwoSettings
 
-    // 將畫布分成幾個區域
-    const gridSize = 4 // 4x4 網格
-    const cellWidth = width / gridSize
-    const cellHeight = height / gridSize
+    for (let i = 0; i < currentSettings.Burns; i++) {
+        let randX, randY
 
-    // 在每個區域中隨機放置火種
-    const burnsPerCell = Math.ceil(currentSettings.Burns / (gridSize * gridSize))
+        while (true) {
+            randX = Math.floor(Math.random() * width)
+            randY = Math.floor(Math.random() * height)
 
-    for (let gridX = 0; gridX < gridSize; gridX++) {
-        for (let gridY = 0; gridY < gridSize; gridY++) {
-            for (let i = 0; i < burnsPerCell; i++) {
-                let randX, randY
-                let attempts = 0
-                const maxAttempts = 50 // 防止無限循環
-
-                while (attempts < maxAttempts) {
-                    // 在當前網格內隨機選擇位置
-                    randX = Math.floor(gridX * cellWidth + Math.random() * cellWidth)
-                    randY = Math.floor(gridY * cellHeight + Math.random() * cellHeight)
-
-                    // 確保位置在畫布範圍內
-                    randX = Math.min(Math.max(randX, 0), width - 1)
-                    randY = Math.min(Math.max(randY, 0), height - 1)
-
-                    if (shapeMask[randX][randY] === inShape) {
-                        mapData[randX][randY].val = 0 // 設置起火點
-                        break
-                    }
-                    attempts++
-                }
+            if (shapeMask[randX][randY] === inShape) {
+                break
             }
         }
+        // 起火點 => val=0 => 立即燃燒
+        mapData[randX][randY].val = 0
     }
 }
 
