@@ -77,10 +77,10 @@ import type { WeatherInfo } from '@/constants/weatherCodes'
 
 const selectedCity = ref<City>(TAIWAN_CITIES[0])
 const todayWeekday =
-    new Date().getDay() === 0 ? 'sunday' : WEEK_DATES[new Date().getDay() - 1].value
-const selectedDate = ref<string>(todayWeekday)
-const isLoading = ref(true)
-const weatherData = ref<WeatherData | null>(null)
+    new Date().getDay() === 0 ? 'sunday' : WEEK_DATES[new Date().getDay() - 1].value // 獲取今天是星期幾
+const selectedDate = ref<string>(todayWeekday) //選擇日期(預計今天)
+const isLoading = ref(true) // 是否正在加載
+const weatherData = ref<WeatherData | null>(null) // 天氣資料
 
 // 根據天氣代碼獲取對應的描述和圖標
 const getWeatherInfo = (weatherCode: number): WeatherInfo => {

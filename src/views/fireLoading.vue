@@ -1,5 +1,8 @@
 <template>
     <h1 v-show="burnedOncePhase2" class="main-title">LOVE TAIWAN.</h1>
+    <h2 v-show="burnedOncePhase2" class="main-title2">
+        Taiwan's Splendor: <br />A Symphony of Nature and Life
+    </h2>
     <div class="container">
         <!-- 添加標題元素 -->
 
@@ -20,16 +23,24 @@
 
         <!-- 燃燒完成後顯示的組件 -->
         <div v-if="showComponents" class="components-container">
-            <WeatherWidget class="component-item" />
-            <ProductCarousel class="component-item" />
-            <DraggableList class="component-item" />
             <CssIcon class="component-item" />
+            <ProductCarousel class="component-item" />
+            <WeatherWidget class="tw-min-w-[77rem]" />
+            <DraggableList class="component-item" />
+            <AnimatedButton />
         </div>
     </div>
 </template>
 
 <script setup>
 import { ref, reactive, onMounted, onUnmounted } from 'vue'
+
+// 添加組件引用
+import CssIcon from '@/components/CssIcon.vue'
+import DraggableList from '@/components/DraggableList.vue'
+import ProductCarousel from '@/components/ProductCarousel.vue'
+import WeatherWidget from '@/components/WeatherWidget.vue'
+import AnimatedButton from '@/components/animatedButton.vue'
 
 /**
  * ------------- 變數區 -------------
@@ -58,16 +69,6 @@ const bgImage = ref(null)
 
 // 添加開始狀態控制
 const started = ref(false)
-
-// 添加組件引用
-import AddImgScrollIntoDialog from '@/components/AddImgScrollIntoDialog.vue'
-import BackToTop from '@/components/Button/BackToTop.vue'
-import MoreButton from '@/components/Button/MoreButton.vue'
-import CssIcon from '@/components/CssIcon.vue'
-import DraggableList from '@/components/DraggableList.vue'
-import Picturebox from '@/components/Picturebox.vue'
-import ProductCarousel from '@/components/ProductCarousel.vue'
-import WeatherWidget from '@/components/WeatherWidget.vue'
 
 // 添加組件顯示控制
 const showComponents = ref(false)
@@ -566,6 +567,9 @@ canvas {
     .main-title {
         font-size: 3rem;
     }
+    .main-title2 {
+        font-size: 2rem;
+    }
 }
 
 @media (max-width: 480px) {
@@ -602,6 +606,9 @@ canvas {
 
     .main-title {
         font-size: 2rem;
+    }
+    .main-title2 {
+        font-size: 1rem;
     }
 }
 
@@ -656,10 +663,25 @@ canvas {
 .main-title {
     position: absolute;
     top: 50%;
-    left: 50%;
+    left: 48%;
     transform: translate(-50%, -50%);
     color: white;
     font-size: 5rem;
+    font-weight: bold;
+    text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.5);
+    z-index: 1;
+    opacity: 0;
+    animation: fadeIn 1s ease-in forwards;
+    pointer-events: none;
+}
+.main-title2 {
+    position: absolute;
+    top: 63%;
+    left: 50%;
+    right: 5%;
+    transform: translate(-50%, -50%);
+    color: white;
+    font-size: 3rem;
     font-weight: bold;
     text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.5);
     z-index: 1;
