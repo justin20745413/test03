@@ -4,7 +4,7 @@
             <q-btn flat dense round icon="menu" @click="toggleLeftDrawer" />
 
             <q-toolbar-title class="text-weight-bold">
-                <span class="text-h6">Design Studio</span>
+                <span class="text-h6">Design Studio </span>
             </q-toolbar-title>
 
             <div class="q-gutter-sm">

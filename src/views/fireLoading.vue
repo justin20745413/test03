@@ -1,5 +1,8 @@
 <template>
+    <h1 v-show="burnedOncePhase2" class="main-title">LOVE TAIWAN.</h1>
     <div class="container">
+        <!-- 添加標題元素 -->
+
         <!-- 添加開始頁面 -->
         <div v-if="!started" class="start-page">
             <p><q-icon name="local_fire_department" /> 燃燒動畫效果</p>
@@ -14,6 +17,14 @@
             <div class="loading"></div>
         </div>
         <canvas ref="canvasRef" v-show="started"></canvas>
+
+        <!-- 燃燒完成後顯示的組件 -->
+        <div v-if="showComponents" class="components-container">
+            <WeatherWidget class="component-item" />
+            <ProductCarousel class="component-item" />
+            <DraggableList class="component-item" />
+            <CssIcon class="component-item" />
+        </div>
     </div>
 </template>
 
@@ -31,7 +42,7 @@ let animationFrameId = null
 // 分階段燃燒控制：1 => 燃燒圖形內, 2 => 燃燒圖形外
 const phase = ref(1)
 let burnedOncePhase1 = false
-let burnedOncePhase2 = false
+const burnedOncePhase2 = ref(false)
 
 // 兩張用來做「燃燒後切換」的圖 (白圖 / 黑圖)
 let img1, img2
@@ -48,6 +59,19 @@ const bgImage = ref(null)
 // 添加開始狀態控制
 const started = ref(false)
 
+// 添加組件引用
+import AddImgScrollIntoDialog from '@/components/AddImgScrollIntoDialog.vue'
+import BackToTop from '@/components/Button/BackToTop.vue'
+import MoreButton from '@/components/Button/MoreButton.vue'
+import CssIcon from '@/components/CssIcon.vue'
+import DraggableList from '@/components/DraggableList.vue'
+import Picturebox from '@/components/Picturebox.vue'
+import ProductCarousel from '@/components/ProductCarousel.vue'
+import WeatherWidget from '@/components/WeatherWidget.vue'
+
+// 添加組件顯示控制
+const showComponents = ref(false)
+
 /**
  * 兩組不同的「燃燒參數」
  * -------------------------
@@ -62,12 +86,12 @@ const stepOneSettings = reactive({
     randomSize: 40 // 減少隨機大小範圍，使燃燒更快開始
 })
 const stepTwoSettings = reactive({
-    Burns: 8, // 增加起火點數量
+    Burns: 16, // 增加起火點數量
     Color: true,
     burnColor: '#FFFFFF',
-    baseSpeed: 8, // 提高基礎速度
-    speedVariation: 16, // 增加速度變化
-    randomSize: 50 // 減少隨機大小範圍，使燃燒更快開始
+    baseSpeed: 6, // 提高基礎速度
+    speedVariation: 20, // 增加速度變化
+    randomSize: 60 // 減少隨機大小範圍，使燃燒更快開始
 })
 
 /**
@@ -119,6 +143,7 @@ function createBlackImage(w, h) {
 
 /**
  * createShapeMask():
+ * taiwan maps
  * 這裡示範用 Path2D 繪製一個 SVG path 並放在正中央
  * 你可以直接換成任何 path 或改寫成圓形 / 方形都可以
  */
@@ -248,22 +273,40 @@ function initBurningPhase(inShape = true) {
     const width = canvas.width
     const height = canvas.height
 
-    // 看目前 phase，拿對應的設定
     const currentSettings = phase.value === 1 ? stepOneSettings : stepTwoSettings
 
-    for (let i = 0; i < currentSettings.Burns; i++) {
-        let randX, randY
+    // 將畫布分成幾個區域
+    const gridSize = 4 // 4x4 網格
+    const cellWidth = width / gridSize
+    const cellHeight = height / gridSize
 
-        while (true) {
-            randX = Math.floor(Math.random() * width)
-            randY = Math.floor(Math.random() * height)
+    // 在每個區域中隨機放置火種
+    const burnsPerCell = Math.ceil(currentSettings.Burns / (gridSize * gridSize))
 
-            if (shapeMask[randX][randY] === inShape) {
-                break
+    for (let gridX = 0; gridX < gridSize; gridX++) {
+        for (let gridY = 0; gridY < gridSize; gridY++) {
+            for (let i = 0; i < burnsPerCell; i++) {
+                let randX, randY
+                let attempts = 0
+                const maxAttempts = 50 // 防止無限循環
+
+                while (attempts < maxAttempts) {
+                    // 在當前網格內隨機選擇位置
+                    randX = Math.floor(gridX * cellWidth + Math.random() * cellWidth)
+                    randY = Math.floor(gridY * cellHeight + Math.random() * cellHeight)
+
+                    // 確保位置在畫布範圍內
+                    randX = Math.min(Math.max(randX, 0), width - 1)
+                    randY = Math.min(Math.max(randY, 0), height - 1)
+
+                    if (shapeMask[randX][randY] === inShape) {
+                        mapData[randX][randY].val = 0 // 設置起火點
+                        break
+                    }
+                    attempts++
+                }
             }
         }
-        // 起火點 => val=0 => 立即燃燒
-        mapData[randX][randY].val = 0
     }
 }
 
@@ -332,7 +375,7 @@ function render() {
                 data[idx] = 0 // 改為白色
                 data[idx + 1] = 0
                 data[idx + 2] = 0
-                data[idx + 3] = 0 //\透明
+                data[idx + 3] = 0 //透明
 
                 if (pixel.neighbors) {
                     burnEdges(x, y, data)
@@ -401,10 +444,15 @@ function checkBurningPhase() {
             phase.value = 2
             prepareOutsideForPhase2()
             initBurningPhase(false)
-        } else if (phase.value === 2 && !burnedOncePhase2) {
+        } else if (phase.value === 2 && !burnedOncePhase2.value) {
             // 第二階段完成
-            burnedOncePhase2 = true
+            burnedOncePhase2.value = true
+            showComponents.value = true
             cancelAnimationFrame(animationFrameId)
+
+            // 燃燒完成後只解鎖 Y 軸滾動
+            document.body.style.overflowY = 'auto'
+            document.body.style.overflowX = 'hidden'
         }
     }
 }
@@ -428,15 +476,12 @@ onMounted(() => {
     canvas = canvasRef.value
     ctx = canvas.getContext('2d')
 
+    // 一開始就鎖住 X 和 Y 軸滾動
+    document.body.style.overflow = 'hidden'
+
     // 加載背景圖
     bgImage.value = new Image()
     bgImage.value.src = new URL('@/assets/bg-fire.jpg', import.meta.url).href
-
-    // 等待圖片加載完成
-    bgImage.value.onload = () => {
-        console.log('背景圖片加載完成')
-        // 不再自動開始動畫，等待用戶點擊開始按鈕
-    }
 })
 
 // 清理
@@ -444,6 +489,7 @@ onUnmounted(() => {
     if (animationFrameId) {
         cancelAnimationFrame(animationFrameId)
     }
+    document.body.style.overflow = ''
 })
 </script>
 
@@ -452,7 +498,6 @@ onUnmounted(() => {
     position: relative;
     width: 100vw;
     height: 100vh;
-    overflow: hidden;
 }
 
 canvas {
@@ -535,6 +580,12 @@ canvas {
     }
 }
 
+@media (max-width: 768px) {
+    .main-title {
+        font-size: 3rem;
+    }
+}
+
 @media (max-width: 480px) {
     .icon-container {
         grid-template-columns: repeat(2, 1fr);
@@ -565,6 +616,10 @@ canvas {
 
     .loading {
         font-size: 24px;
+    }
+
+    .main-title {
+        font-size: 2rem;
     }
 }
 
@@ -613,5 +668,86 @@ canvas {
 
 .start-btn:hover {
     transform: scale(1.05);
+}
+
+/* 添加標題樣式 */
+.main-title {
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    color: white;
+    font-size: 5rem;
+    font-weight: bold;
+    text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.5);
+    z-index: 1;
+    opacity: 0;
+    animation: fadeIn 1s ease-in forwards;
+    pointer-events: none;
+}
+
+@keyframes fadeIn {
+    from {
+        opacity: 0;
+        transform: translate(-50%, -50%) scale(0.9);
+    }
+    to {
+        opacity: 1;
+        transform: translate(-50%, -50%) scale(1);
+    }
+}
+
+.components-container {
+    position: absolute;
+    top: 100vh;
+    left: 0;
+    width: 100%;
+    padding: 20px;
+    display: flex;
+    flex-direction: column;
+    gap: 30px;
+    opacity: 0;
+    animation: fadeIn 1s ease forwards;
+    animation-delay: 0.5s;
+    background-color: var(--q-background);
+}
+
+.component-item {
+    width: 100%;
+    max-width: 1200px;
+    margin: 0 auto;
+    border-radius: 8px;
+    box-shadow: 0 2px 12px rgba(0, 0, 0, 0.1);
+    background: white;
+    overflow: hidden;
+    padding: 20px;
+}
+
+@keyframes fadeIn {
+    from {
+        opacity: 0;
+        transform: translateY(20px);
+    }
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+@media (max-width: 768px) {
+    .components-container {
+        padding: 10px;
+        gap: 20px;
+    }
+}
+
+/* 確保整個容器填滿視窗且不會出現滾動條 */
+.fire-loading {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100vw;
+    height: 100vh;
+    overflow: hidden;
 }
 </style>
