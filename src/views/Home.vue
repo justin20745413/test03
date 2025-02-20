@@ -1,5 +1,11 @@
 <template>
     <div class="q-pa-md">
+        <!-- 添加跑馬燈 -->
+        <MarqueeText
+            text="歡迎光臨！Welcome！いらっしゃいませ！ 歡迎光臨！Welcome！いらっしゃいませ！"
+            :speed="12"
+        />
+
         <!-- Hero Section -->
         <div class="hero-section q-mb-xl">
             <ProductCarousel class="carousel-container" />
@@ -58,6 +64,7 @@ import ImageCropper from '@/components/ImageCropper.vue'
 import CssIcon from '@/components/CssIcon.vue'
 import WeatherWidget from '@/components/WeatherWidget.vue'
 import Picturebox from '@/components/Picturebox.vue'
+import MarqueeText from '@/components/MarqueeText.vue'
 </script>
 
 <style lang="scss" scoped>
