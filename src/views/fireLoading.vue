@@ -1,6 +1,6 @@
 <template>
     <h1 v-show="burnedOncePhase2" class="main-title">LOVE TAIWAN.</h1>
-    <h2 v-show="burnedOncePhase2" class="main-title2">
+    <h2 v-show="burnedOncePhase2" class="main-title2 hide-on-small-screen">
         Taiwan's Splendor: <br />A Symphony of Nature and Life
     </h2>
     <div class="container">
@@ -9,7 +9,7 @@
         <!-- 添加開始頁面 -->
         <div v-if="!started" class="start-page">
             <p><q-icon name="local_fire_department" /> 燃燒動畫效果</p>
-            <span
+            <span class="hide-on-small-screen"
                 >點擊下方按鈕，體驗真實的燃燒效果！隨著火焰蔓延，白色紙張逐漸消失，隱藏於底層的畫面將神秘浮現。每一次燃燒的路徑都是獨特的，營造出視覺震撼的交錯感。感受火焰的魅力，探索光與影的變化，創造屬於你的獨特體驗！</span
             >
             <button class="start-btn" @click="handleStart">Start</button>
@@ -55,9 +55,6 @@ const phase = ref(1)
 let burnedOncePhase1 = false
 const burnedOncePhase2 = ref(false)
 
-// 兩張用來做「燃燒後切換」的圖 (白圖 / 黑圖)
-let img1, img2
-
 // mapData: 存每個像素的燃燒資料
 let mapData = []
 
@@ -84,15 +81,15 @@ const stepOneSettings = reactive({
     burnColor: '#FFFFFF',
     baseSpeed: 1, // 提高基礎速度
     speedVariation: 1, // 速度變化
-    randomSize: 10 // 減少隨機大小範圍，使燃燒更快開始
+    randomSize: 20 // 減少隨機大小範圍，使燃燒更快開始
 })
 const stepTwoSettings = reactive({
-    Burns: 15, // 降低起火點數量，避免太多點同時燃燒造成卡頓
+    Burns: 40, // 降低起火點數量，避免太多點同時燃燒造成卡頓
     Color: true,
     burnColor: '#FFFFFF',
-    baseSpeed: 2, // 降低基礎速度，使動畫更平滑
-    speedVariation: 35, // 降低速度變化範圍，使燃燒更均勻
-    randomSize: 60 // 減小隨機大小範圍，使燃燒更集中
+    baseSpeed: 1, // 降低基礎速度，使動畫更平滑
+    speedVariation: 40, // 降低速度變化範圍，使燃燒更均勻
+    randomSize: 70 // 減小隨機大小範圍，使燃燒更集中
 })
 
 /**
@@ -114,32 +111,6 @@ function hexToRgb(hex) {
     const b = bigint & 255
 
     return { r, g, b }
-}
-
-function createWhiteImage(w, h) {
-    const tempCanvas = document.createElement('canvas')
-
-    tempCanvas.width = w
-    tempCanvas.height = h
-    const tempCtx = tempCanvas.getContext('2d')
-
-    tempCtx.fillStyle = '#fff'
-    tempCtx.fillRect(0, 0, w, h)
-
-    return tempCanvas.toDataURL()
-}
-
-function createBlackImage(w, h) {
-    const tempCanvas = document.createElement('canvas')
-
-    tempCanvas.width = w
-    tempCanvas.height = h
-    const tempCtx = tempCanvas.getContext('2d')
-
-    tempCtx.fillStyle = '#000'
-    tempCtx.fillRect(0, 0, w, h)
-
-    return tempCanvas.toDataURL()
 }
 
 /**
@@ -338,7 +309,6 @@ function render() {
 
     // 先填充白色背景，而不是繪製背景圖
     ctx.fillStyle = '#FFFFFF'
-    ctx.fillRect(0, 0, width, height)
 
     // 取得當前階段的設定
     const currentSettings = phase.value === 1 ? stepOneSettings : stepTwoSettings
@@ -371,11 +341,6 @@ function render() {
                     data[idx + 1] = color.g
                     data[idx + 2] = color.b
                     data[idx + 3] = 255 // 完全不透明
-                } else {
-                    data[idx] = 255
-                    data[idx + 1] = 255
-                    data[idx + 2] = 255
-                    data[idx + 3] = 255
                 }
             } else {
                 // 未燃燒的像素 - 黑色不透明
@@ -401,43 +366,59 @@ function render() {
  * 檢查燃燒階段並控制轉換
  */
 function checkBurningPhase() {
-    const width = canvas.width
-    const height = canvas.height
-    let unburned = false
+    // 使用 some 方法來提高效能
+    const hasUnburnedPixels = (inShape) => {
+        return mapData.some((row, x) =>
+            row.some((pixel, y) => {
+                // 檢查是否為當前階段需要處理的區域
+                const isTargetArea = (phase.value === 1) === pixel.inShape
+                // 檢查像素是否未完全燒完 (0 < val < 999999)
+                return isTargetArea && pixel.val > 0 && pixel.val < 999999
+            })
+        )
+    }
 
     // 檢查當前階段是否還有未燒完的像素
-    for (let x = 0; x < width && !unburned; x++) {
-        for (let y = 0; y < height && !unburned; y++) {
-            const pixel = mapData[x][y]
-            if (
-                ((phase.value === 1 && pixel.inShape) || (phase.value === 2 && !pixel.inShape)) &&
-                pixel.val > 0 &&
-                pixel.val < 999999
-            ) {
-                unburned = true
-            }
-        }
-    }
+    const unburned = hasUnburnedPixels(phase.value === 1)
 
-    // 階段轉換控制
+    // 如果當前階段已完全燒完
     if (!unburned) {
-        if (phase.value === 1 && !burnedOncePhase1) {
-            // 第一階段完成，準備第二階段
-            burnedOncePhase1 = true
-            phase.value = 2
-            prepareOutsideForPhase2()
-            initBurningPhase(false)
-        } else if (phase.value === 2 && !burnedOncePhase2.value) {
-            // 第二階段完成
-            burnedOncePhase2.value = true
-            showComponents.value = true
-            cancelAnimationFrame(animationFrameId)
-
-            // 燃燒完成後只解鎖 Y 軸滾動
-            document.body.style.overflowY = 'auto'
-            document.body.style.overflowX = 'hidden'
-        }
+        handlePhaseTransition()
     }
+}
+
+// 將階段轉換邏輯分離出來，提高可讀性
+function handlePhaseTransition() {
+    // 第一階段完成，準備進入第二階段
+    if (phase.value === 1 && !burnedOncePhase1) {
+        startPhaseTwo()
+        return
+    }
+
+    // 第二階段完成，結束動畫
+    if (phase.value === 2 && !burnedOncePhase2.value) {
+        completeAnimation()
+    }
+}
+
+// 開始第二階段
+function startPhaseTwo() {
+    burnedOncePhase1 = true
+    phase.value = 2
+    prepareOutsideForPhase2()
+    initBurningPhase(false)
+}
+
+// 完成動畫
+function completeAnimation() {
+    burnedOncePhase2.value = true
+    showComponents.value = true
+
+    // 解鎖垂直滾動，保持水平鎖定
+    document.body.style.cssText = `
+        overflow-y: auto;
+        overflow-x: hidden;
+    `
 }
 
 // 添加開始按鈕處理函數
@@ -565,10 +546,11 @@ canvas {
 
 @media (max-width: 768px) {
     .main-title {
-        font-size: 3rem;
-    }
-    .main-title2 {
         font-size: 2rem;
+    }
+    .components-container {
+        padding: 10px;
+        gap: 20px;
     }
 }
 
@@ -602,13 +584,6 @@ canvas {
 
     .loading {
         font-size: 24px;
-    }
-
-    .main-title {
-        font-size: 2rem;
-    }
-    .main-title2 {
-        font-size: 1rem;
     }
 }
 
@@ -738,13 +713,6 @@ canvas {
     }
 }
 
-@media (max-width: 768px) {
-    .components-container {
-        padding: 10px;
-        gap: 20px;
-    }
-}
-
 /* 確保整個容器填滿視窗且不會出現滾動條 */
 .fire-loading {
     position: fixed;
@@ -753,5 +721,11 @@ canvas {
     width: 100vw;
     height: 100vh;
     overflow: hidden;
+}
+
+@media (max-width: 1100px) {
+    .hide-on-small-screen {
+        display: none !important;
+    }
 }
 </style>

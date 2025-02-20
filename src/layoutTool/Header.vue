@@ -1,12 +1,10 @@
 <template>
-    <q-header elevated :class="[isDark ? 'bg-dark' : `bg-${currentTheme}`, 'header-shadow']">
+    <q-header elevated :class="[isDark ? `bg-dark` : `bg-${currentTheme}`, 'header-shadow']">
         <q-toolbar class="q-px-lg">
             <q-btn flat dense round icon="menu" @click="toggleLeftDrawer" />
 
             <q-toolbar-title class="text-weight-bold">
-                <span class="text-h6"
-                    >Design Studio (這是教育練習用勿拿相關圖片資料去進行商業用途)</span
-                >
+                <span>Design Studio</span>
             </q-toolbar-title>
 
             <div class="q-gutter-sm">
