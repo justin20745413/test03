@@ -3,7 +3,7 @@
     <h2 v-show="burnedOncePhase2" class="main-title2 hide-on-small-screen">
         Taiwan's Splendor: <br />A Symphony of Nature and Life
     </h2>
-    <div class="container">
+    <div class="container" :style="{ minHeight: containerHeight }">
         <!-- 添加標題元素 -->
 
         <!-- 添加開始頁面 -->
@@ -67,6 +67,9 @@ const started = ref(false)
 
 // 添加組件顯示控制
 const showComponents = ref(false)
+
+// 添加一個 ref 來控制容器高度
+const containerHeight = ref('100vh')
 
 /**
  * 兩組不同的「燃燒參數」
@@ -411,6 +414,7 @@ function startPhaseTwo() {
 function completeAnimation() {
     burnedOncePhase2.value = true
     showComponents.value = true
+    containerHeight.value = '460vh' // 當動畫完成時改變高度
 
     // 解鎖垂直滾動，保持水平鎖定
     document.body.style.cssText = `
@@ -459,8 +463,8 @@ onUnmounted(() => {
 .container {
     position: relative;
     width: 100vw;
-    height: 100vh;
     margin: 0;
+    transition: min-height 0.5s ease; /* 添加過渡效果 */
 }
 
 canvas {
@@ -468,7 +472,6 @@ canvas {
     top: 0;
     left: 0;
     width: 100vw;
-    height: 100vh;
     background: url('@/assets/bg-fire.jpg') no-repeat center center fixed;
     background-size: cover;
     object-fit: cover;
@@ -635,7 +638,7 @@ canvas {
     flex-direction: column;
     justify-content: center;
     align-items: center;
-    background-color: rgba(0, 0, 0, 0.8);
+    background-color: rgba(0, 0, 0, 0.973);
     color: white;
     z-index: 1000;
 }
@@ -674,7 +677,7 @@ canvas {
 /* 添加標題樣式 */
 .main-title {
     position: absolute;
-    top: 50%;
+    top: 10%;
     left: 8%;
     transform: translate(-50%, -50%);
     color: white;
@@ -688,7 +691,7 @@ canvas {
 }
 .main-title2 {
     position: absolute;
-    top: 63%;
+    top: 15%;
     left: 8%;
     right: 5%;
     transform: translate(-50%, -50%);
@@ -698,7 +701,7 @@ canvas {
     text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.5);
     z-index: 1;
     opacity: 0;
-    animation: fadeIn 1s ease-in forwards;
+    animation: fadeIn 1.5s ease-in forwards;
     pointer-events: none;
 }
 
