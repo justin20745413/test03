@@ -24,8 +24,7 @@
         <!-- 燃燒完成後顯示的組件 -->
         <div v-if="showComponents" class="components-container">
             <CssIcon class="component-item" />
-            <ProductCarousel class="component-item" />
-            <WeatherWidget class="tw-min-w-[77rem]" />
+            <WeatherWidget class="component-item" />
             <DraggableList class="component-item" />
             <AnimatedButton />
         </div>
@@ -38,7 +37,6 @@ import { ref, reactive, onMounted, onUnmounted } from 'vue'
 // 添加組件引用
 import CssIcon from '@/components/CssIcon.vue'
 import DraggableList from '@/components/DraggableList.vue'
-import ProductCarousel from '@/components/ProductCarousel.vue'
 import WeatherWidget from '@/components/WeatherWidget.vue'
 import AnimatedButton from '@/components/animatedButton.vue'
 
@@ -462,22 +460,24 @@ onUnmounted(() => {
     position: relative;
     width: 100vw;
     height: 100vh;
+    margin: 0;
 }
 
 canvas {
     position: absolute;
-    background: url('@/assets/bg-fire.jpg') no-repeat center center;
-    background-size: cover;
     top: 0;
     left: 0;
-    width: 100%;
-    height: 100%;
+    width: 100vw;
+    height: 100vh;
+    background: url('@/assets/bg-fire.jpg') no-repeat center center fixed;
+    background-size: cover;
+    object-fit: cover;
 }
 
 .loading-container {
     position: absolute;
     top: 50%;
-    left: 50%;
+    left: 67%;
     transform: translate(-50%, -50%);
     z-index: 100;
 }
@@ -544,46 +544,83 @@ canvas {
     }
 }
 
-@media (max-width: 768px) {
-    .main-title {
-        font-size: 2rem;
+@media (max-width: 1024px) {
+    .start-page span {
+        width: 50%;
+        font-size: 1rem;
     }
-    .components-container {
-        padding: 10px;
-        gap: 20px;
+
+    .component-item {
+        max-width: 90%;
+    }
+
+    .loading {
+        font-size: 28px;
+    }
+}
+
+@media (max-width: 767px) {
+    .start-page {
+        padding: 20px;
+    }
+
+    .start-page span {
+        width: 80%;
+        font-size: 0.9rem;
+    }
+
+    .start-page p {
+        font-size: 1rem;
+    }
+
+    .start-btn {
+        font-size: 1.2rem;
+        padding: 0.5rem 2rem;
+    }
+
+    .component-item {
+        max-width: 95%;
+    }
+
+    .loading {
+        font-size: 20px;
+        left: 50%;
+    }
+
+    .loading-container {
+        left: 50%;
     }
 }
 
 @media (max-width: 480px) {
-    .icon-container {
-        grid-template-columns: repeat(2, 1fr);
-        gap: 16px;
-        padding: 12px;
+    .start-page {
+        padding: 15px;
     }
 
-    .Battery {
-        width: 50px;
-        height: 25px;
+    .start-page span {
+        width: 90%;
+        font-size: 0.9rem;
+        padding: 0.8rem;
     }
 
-    .water {
-        width: 40px;
+    .start-page p {
+        font-size: 1.1rem;
+        text-align: center;
     }
 
-    .triangle {
-        width: 50px;
+    .start-btn {
+        font-size: 1.2rem;
+        padding: 0.8rem 2rem;
     }
 
-    .water_droplets {
-        width: 60px;
+    .component-item {
+        max-width: 100%;
+        margin: 0 8px;
     }
 
-    .square {
-        width: 40px;
-    }
-
-    .loading {
-        font-size: 24px;
+    .components-container {
+        gap: 20px;
+        padding: 15px;
     }
 }
 
@@ -592,7 +629,7 @@ canvas {
     position: absolute;
     top: 0;
     left: 0;
-    width: 100%;
+    width: 100vw;
     height: 100%;
     display: flex;
     flex-direction: column;
@@ -638,7 +675,7 @@ canvas {
 .main-title {
     position: absolute;
     top: 50%;
-    left: 48%;
+    left: 8%;
     transform: translate(-50%, -50%);
     color: white;
     font-size: 5rem;
@@ -652,7 +689,7 @@ canvas {
 .main-title2 {
     position: absolute;
     top: 63%;
-    left: 50%;
+    left: 8%;
     right: 5%;
     transform: translate(-50%, -50%);
     color: white;
@@ -678,10 +715,9 @@ canvas {
 
 .components-container {
     position: absolute;
-    top: 100vh;
+    width: 100vw;
+    top: 110vh;
     left: 0;
-    width: 100%;
-    padding: 20px;
     display: flex;
     flex-direction: column;
     gap: 30px;
@@ -689,17 +725,18 @@ canvas {
     animation: fadeIn 1s ease forwards;
     animation-delay: 0.5s;
     background-color: var(--q-background);
+    padding: 20px;
 }
 
 .component-item {
+    min-width: unset;
+    max-width: 900px;
     width: 100%;
-    max-width: 1200px;
     margin: 0 auto;
     border-radius: 8px;
     box-shadow: 0 2px 12px rgba(0, 0, 0, 0.1);
     background: white;
     overflow: hidden;
-    padding: 20px;
 }
 
 @keyframes fadeIn {
@@ -726,6 +763,37 @@ canvas {
 @media (max-width: 1100px) {
     .hide-on-small-screen {
         display: none !important;
+    }
+}
+
+/* 添加 iPhone SE 尺寸的支援 */
+@media (max-width: 375px) {
+    .start-page span {
+        width: 95%;
+        font-size: 0.8rem;
+        padding: 0.6rem;
+    }
+
+    .start-page p {
+        font-size: 1rem;
+    }
+
+    .start-btn {
+        font-size: 1.1rem;
+        padding: 0.6rem 1.8rem;
+    }
+
+    .components-container {
+        gap: 15px;
+        padding: 10px;
+    }
+
+    .component-item {
+        margin: 0 5px;
+    }
+
+    .loading {
+        font-size: 16px;
     }
 }
 </style>
