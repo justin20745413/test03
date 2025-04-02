@@ -149,7 +149,7 @@ const mouseY = ref(0)
 const showCoordinates = ref(true)
 
 // 更新鼠標位置
-const updateMousePosition = (event) => {
+const updateMousePosition = (event: MouseEvent) => {
     mouseX.value = event.clientX
     mouseY.value = event.clientY
 }
