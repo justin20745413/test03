@@ -1,5 +1,5 @@
 <template>
-    <div class="container">
+    <div class="spline-container">
         <!-- 背景動畫 -->
         <spline-viewer
             class="spline-background"
@@ -104,9 +104,8 @@ onMounted(() => {
 </script>
 
 <style scoped lang="scss">
-.container {
+.spline-container {
     position: relative;
-    width: 100vw;
     height: 100vh;
     overflow: hidden;
     background: linear-gradient(to bottom right, #88aff7, #ffffff);
