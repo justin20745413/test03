@@ -37,6 +37,12 @@
                     </q-item-section>
                     <q-item-section>Spline</q-item-section>
                 </q-item>
+                <q-item clickable v-ripple to="/Spline1">
+                    <q-item-section avatar>
+                        <q-icon name="crop" />
+                    </q-item-section>
+                    <q-item-section>Spline1</q-item-section>
+                </q-item>
 
                 <q-item clickable v-ripple to="/practice">
                     <q-item-section avatar>

@@ -4,6 +4,7 @@ import Products from '../views/Products.vue'
 import fileupload from '../views/fileupload.vue'
 import PracticeArea from '../views/PracticeArea.vue'
 import Spline from '../views/Spline.vue'
+import Spline1 from '../views/Spline1.vue'
 import fishweb from '../views/fishweb.vue'
 import imgScrollIntoView from '../views/imgScrollIntoView.vue'
 import fireLoading from '../views/fireLoading.vue'
@@ -35,6 +36,11 @@ const router = createRouter({
             path: '/Spline',
             name: 'Spline',
             component: Spline
+        },
+        {
+            path: '/Spline1',
+            name: 'Spline1',
+            component: Spline1
         },
         {
             path: '/fishweb',
