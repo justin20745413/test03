@@ -1,8 +1,27 @@
 <template>
     <div class="app-container">
         <!-- 載入動畫 -->
-        <div class="loading-screen" :class="{ 'fade-out': isLoaded }">
+        <div
+            class="loading-screen"
+            :class="{ 'fade-out': isLoaded }"
+            @mousemove="updateMousePosition"
+        >
             <div class="loading-content">
+                <!-- 座標追踪系統 -->
+                <div class="coordinate-tracker" v-show="showCoordinates">
+                    <!-- X軸線 -->
+                    <div class="coordinate-line x-line" :style="{ top: `${mouseY}px` }"></div>
+                    <!-- Y軸線 -->
+                    <div class="coordinate-line y-line" :style="{ left: `${mouseX}px` }"></div>
+                    <!-- 座標數值顯示 -->
+                    <div
+                        class="coordinate-values"
+                        :style="{ left: `${mouseX + 15}px`, top: `${mouseY + 15}px` }"
+                    >
+                        X: {{ mouseX }} Y: {{ mouseY }}
+                    </div>
+                </div>
+
                 <!-- 數字化圖案背景 -->
                 <div class="digital-background">
                     <div
@@ -124,6 +143,17 @@ const backgroundSplineUrl = ref('')
 const isLoaded = ref(false)
 const progressPercentage = ref(0)
 
+// 鼠標座標追踪變量
+const mouseX = ref(0)
+const mouseY = ref(0)
+const showCoordinates = ref(true)
+
+// 更新鼠標位置
+const updateMousePosition = (event) => {
+    mouseX.value = event.clientX
+    mouseY.value = event.clientY
+}
+
 onMounted(() => {
     // 載入 Spline Viewer
     if (!customElements.get('spline-viewer')) {
@@ -160,6 +190,48 @@ onMounted(() => {
 .app-container {
     position: relative;
     min-height: 100vh;
+}
+
+// 座標追踪系統樣式
+.coordinate-tracker {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    pointer-events: none;
+    z-index: 10000;
+}
+
+.coordinate-line {
+    position: absolute;
+    background-color: rgba(0, 255, 0, 0.5);
+    pointer-events: none;
+}
+
+.x-line {
+    width: 100%;
+    height: 1px;
+    left: 0;
+}
+
+.y-line {
+    width: 1px;
+    height: 100%;
+    top: 0;
+}
+
+.coordinate-values {
+    position: absolute;
+    background-color: rgba(0, 0, 0, 0.7);
+    color: #00ff41;
+    padding: 5px 8px;
+    border-radius: 4px;
+    font-family: monospace;
+    font-size: 12px;
+    pointer-events: none;
+    border: 1px solid #00ff41;
+    text-shadow: 0 0 5px rgba(0, 255, 65, 0.7);
 }
 
 // 載入動畫
