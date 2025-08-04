@@ -5,9 +5,10 @@
                 <template #item="{ element }">
                     <div class="product-card list-group-item">
                         <img
-                            :src="`https://picsum.photos/1000/500/?random=${element.image}`"
+                            :src="getImageUrl(element.image)"
                             :alt="element.name"
                             class="product-image"
+                            @error="onImageError"
                         />
                         <h3 class="product-title">{{ element.name }}</h3>
                         <p class="product-price">{{ element.price }}</p>
@@ -26,6 +27,20 @@ import draggable from 'vuedraggable'
 
 const store = useMainStore()
 const products = ref(store.products)
+
+// 備用圖片URL
+const fallbackImage = 'https://picsum.photos/1000/500/?random=5'
+
+// 獲取圖片URL的函數
+const getImageUrl = (imageId: number) => {
+    return `https://picsum.photos/1000/500/?random=${imageId}`
+}
+
+// 圖片加載錯誤處理
+const onImageError = (event: Event) => {
+    const target = event.target as HTMLImageElement
+    target.src = fallbackImage
+}
 </script>
 
 <style lang="scss" scoped>

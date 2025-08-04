@@ -11,7 +11,7 @@
                         <div v-for="(image, index) in images" :key="index" class="swiper-slide">
                             <div class="image-wrapper">
                                 <q-img
-                                    :src="image"
+                                    :src="getImageUrl(image, index)"
                                     class="banner-image"
                                     fit="cover"
                                     @error="onImageError"
@@ -21,6 +21,13 @@
                                             class="text-center full-width full-height flex flex-center"
                                         >
                                             <q-spinner color="primary" size="3em" />
+                                        </div>
+                                    </template>
+                                    <template v-slot:error>
+                                        <div
+                                            class="text-center full-width full-height flex flex-center"
+                                        >
+                                            <q-icon name="broken_image" size="3em" color="grey-5" />
                                         </div>
                                     </template>
                                 </q-img>
@@ -69,7 +76,20 @@
                             :key="index"
                             class="swiper-slide thumb-slide"
                         >
-                            <q-img :src="image" class="thumb-image" fit="cover" />
+                            <q-img
+                                :src="getImageUrl(image, index)"
+                                class="thumb-image"
+                                fit="cover"
+                                @error="onThumbImageError"
+                            >
+                                <template v-slot:error>
+                                    <div
+                                        class="text-center full-width full-height flex flex-center"
+                                    >
+                                        <q-icon name="broken_image" size="1.5em" color="grey-5" />
+                                    </div>
+                                </template>
+                            </q-img>
                         </div>
                     </div>
                 </div>
@@ -152,10 +172,52 @@ const deleteIndex = ref(-1)
 const bannerSwiper = ref<Swiper | null>(null)
 const thumbsSwiper = ref<Swiper | null>(null)
 
-const placeholderImage = ref('/placeholder.png')
+// 備用圖片URL
+const fallbackImage = 'https://picsum.photos/1000/500/?random=999'
+const fallbackThumbImage = 'https://picsum.photos/200/150/?random=999'
+
+// 圖片錯誤狀態追蹤
+const imageErrorStates = ref<{ [key: number]: boolean }>({})
+
+// 獲取圖片URL的函數
+const getImageUrl = (imageUrl: string, index: number) => {
+    // 如果圖片已經出錯，返回備用圖片
+    if (imageErrorStates.value[index]) {
+        return fallbackImage
+    }
+    return imageUrl
+}
+
+// 主要圖片錯誤處理
 const onImageError = (event: Event) => {
     const target = event.target as HTMLImageElement
-    target.src = placeholderImage.value
+    const index = getImageIndexFromElement(target)
+    if (index !== -1) {
+        imageErrorStates.value[index] = true
+        target.src = fallbackImage
+    }
+}
+
+// 縮圖錯誤處理
+const onThumbImageError = (event: Event) => {
+    const target = event.target as HTMLImageElement
+    const index = getImageIndexFromElement(target)
+    if (index !== -1) {
+        imageErrorStates.value[index] = true
+        target.src = fallbackThumbImage
+    }
+}
+
+// 從DOM元素獲取圖片索引
+const getImageIndexFromElement = (element: HTMLElement): number => {
+    const slide = element.closest('.swiper-slide')
+    if (slide) {
+        const slides = slide.parentElement?.children
+        if (slides) {
+            return Array.from(slides).indexOf(slide)
+        }
+    }
+    return -1
 }
 
 const images = ref([

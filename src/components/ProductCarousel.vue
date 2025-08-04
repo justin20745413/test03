@@ -18,9 +18,10 @@
         >
             <swiper-slide v-for="product in products" :key="product.id">
                 <img
-                    :src="`https://picsum.photos/1000/400/?random=${product.image}`"
+                    :src="getImageUrl(product.image)"
                     :alt="product.name"
                     class="carousel-image"
+                    @error="onImageError"
                 />
                 <div class="carousel-caption">
                     <h3>{{ product.name }}</h3>
@@ -56,6 +57,20 @@ import type { Swiper as SwiperType } from 'swiper'
 
 const store = useMainStore()
 const products = ref(store.products)
+
+// 備用圖片URL
+const fallbackImage = 'https://picsum.photos/1000/400/?random=5'
+
+// 獲取圖片URL的函數
+const getImageUrl = (imageId: number) => {
+    return `https://picsum.photos/1000/400/?random=${imageId}`
+}
+
+// 圖片加載錯誤處理
+const onImageError = (event: Event) => {
+    const target = event.target as HTMLImageElement
+    target.src = fallbackImage
+}
 
 function addToCart(product: { id: number; name: string; price: string }) {
     console.log(`Added ${product.name} to cart`)
