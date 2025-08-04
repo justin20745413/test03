@@ -1,5 +1,5 @@
 <template>
-    <q-layout view="lHh LpR fff">
+    <q-layout view="lHh LpR lFf">
         <Header />
 
         <NavigationDrawer />
@@ -8,14 +8,15 @@
             <router-view />
         </q-page-container>
 
-        <Footer />
+        <Footer v-if="!shouldHideFooter" />
         <BackToTop />
     </q-layout>
 </template>
 
 <script setup lang="ts">
-import { ref, onMounted, nextTick, watch, provide } from 'vue'
+import { ref, onMounted, nextTick, watch, provide, computed } from 'vue'
 import { useQuasar } from 'quasar'
+import { useRoute } from 'vue-router'
 import BackToTop from './components/Button/BackToTop.vue'
 import NavigationDrawer from './layoutTool/NavigationDrawer.vue'
 import Header from './layoutTool/Header.vue'
@@ -25,6 +26,7 @@ import Footer from './layoutTool/Footer.vue'
  * ------------- 狀態管理 -------------
  */
 const $q = useQuasar()
+const route = useRoute()
 const isDark = ref($q.dark.isActive)
 const currentTheme = ref('secondary')
 const leftDrawerOpen = ref(false)
@@ -33,6 +35,11 @@ const leftDrawerOpen = ref(false)
 provide('isDark', isDark)
 provide('currentTheme', currentTheme)
 provide('leftDrawerOpen', leftDrawerOpen)
+
+// 計算是否應該隱藏 Footer
+const shouldHideFooter = computed(() => {
+    return route.meta?.hideFooter === true
+})
 
 /**
  * ------------- 功能函數 -------------

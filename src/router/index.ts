@@ -3,10 +3,10 @@ import Home from '../views/Home.vue'
 import Products from '../views/Products.vue'
 import fileupload from '../views/fileupload.vue'
 import PracticeArea from '../views/PracticeArea.vue'
-import Spline from '../views/Spline.vue'
 import Spline1 from '../views/Spline1.vue'
-import fishweb from '../views/fishweb.vue'
-import imgScrollIntoView from '../views/imgScrollIntoView.vue'
+import SplineBackground from '../views/SplineBackground.vue'
+import offset from '../views/offset.vue'
+import customImageScroll from '../views/customImageScroll.vue'
 import fireLoading from '../views/fireLoading.vue'
 
 const router = createRouter({
@@ -28,29 +28,32 @@ const router = createRouter({
             component: fileupload
         },
         {
-            path: '/practice',
-            name: 'practice',
-            component: PracticeArea
-        },
-        {
-            path: '/Spline',
-            name: 'Spline',
-            component: Spline
-        },
-        {
             path: '/Spline1',
             name: 'Spline1',
             component: Spline1
         },
         {
-            path: '/fishweb',
-            name: 'fishweb',
-            component: fishweb
+            path: '/SplineBackground',
+            name: 'SplineBackground',
+            component: SplineBackground
         },
         {
-            path: '/imgScrollIntoView',
-            name: 'imgScrollIntoView',
-            component: imgScrollIntoView
+            path: '/practice',
+            name: 'practice',
+            component: PracticeArea
+        },
+        {
+            path: '/offset',
+            name: 'offset',
+            component: offset
+        },
+        {
+            path: '/customImageScroll',
+            name: 'customImageScroll',
+            component: customImageScroll,
+            meta: {
+                hideFooter: true
+            }
         },
         {
             path: '/fireLoading',

@@ -2,7 +2,7 @@
     <q-drawer v-model="leftDrawerOpen" bordered :width="250" :breakpoint="400">
         <div class="fixed-navigation tw-flex tw-items-center justify-center">
             <q-icon name="data_thresholding" size="lg"></q-icon>
-            <q-item-label header>Navigation Logo</q-item-label>
+            <q-item-label header>Justin's Design Studio</q-item-label>
         </div>
         <div class="scrollable-content">
             <q-list padding>
@@ -10,14 +10,14 @@
                     <q-item-section avatar>
                         <q-icon name="home" />
                     </q-item-section>
-                    <q-item-section>Home</q-item-section>
+                    <q-item-section>{{ t('navigation.navigation.home') }}</q-item-section>
                 </q-item>
 
                 <q-item clickable v-ripple to="/products">
                     <q-item-section avatar>
                         <q-icon name="shopping_cart" />
                     </q-item-section>
-                    <q-item-section>Products</q-item-section>
+                    <q-item-section>{{ t('navigation.navigation.products') }}</q-item-section>
                 </q-item>
 
                 <q-separator class="q-my-md" />
@@ -28,48 +28,52 @@
                     <q-item-section avatar>
                         <q-icon name="drag_indicator" />
                     </q-item-section>
-                    <q-item-section>檔案上傳區</q-item-section>
+                    <q-item-section>{{ t('navigation.navigation.fileupload') }}</q-item-section>
                 </q-item>
 
-                <q-item clickable v-ripple to="/Spline">
-                    <q-item-section avatar>
-                        <q-icon name="crop" />
-                    </q-item-section>
-                    <q-item-section>Spline</q-item-section>
-                </q-item>
                 <q-item clickable v-ripple to="/Spline1">
                     <q-item-section avatar>
                         <q-icon name="crop" />
                     </q-item-section>
-                    <q-item-section>Spline1</q-item-section>
+                    <q-item-section>{{ t('navigation.navigation.spline1') }}</q-item-section>
+                </q-item>
+                <q-item clickable v-ripple to="/SplineBackground">
+                    <q-item-section avatar>
+                        <q-icon name="crop" />
+                    </q-item-section>
+                    <q-item-section>{{
+                        t('navigation.navigation.splineBackground')
+                    }}</q-item-section>
                 </q-item>
 
                 <q-item clickable v-ripple to="/practice">
                     <q-item-section avatar>
                         <q-icon name="school" />
                     </q-item-section>
-                    <q-item-section>練習區</q-item-section>
+                    <q-item-section>{{ t('navigation.navigation.practice') }}</q-item-section>
                 </q-item>
 
-                <q-item clickable v-ripple to="/fishweb">
+                <q-item clickable v-ripple to="/offset">
                     <q-item-section avatar>
                         <q-icon name="school" />
                     </q-item-section>
-                    <q-item-section>魚網</q-item-section>
+                    <q-item-section>{{ t('navigation.navigation.offset') }}</q-item-section>
                 </q-item>
 
-                <q-item clickable v-ripple to="/imgScrollIntoView">
+                <q-item clickable v-ripple to="/customImageScroll">
                     <q-item-section avatar>
                         <q-icon name="image" />
                     </q-item-section>
-                    <q-item-section>自定義圖片滾動</q-item-section>
+                    <q-item-section>{{
+                        t('navigation.navigation.customImageScroll')
+                    }}</q-item-section>
                 </q-item>
 
                 <q-item clickable v-ripple to="/fireLoading">
                     <q-item-section avatar>
                         <q-icon name="image" />
                     </q-item-section>
-                    <q-item-section>火焰動畫loading畫面</q-item-section>
+                    <q-item-section>{{ t('navigation.navigation.fireLoading') }}</q-item-section>
                 </q-item>
             </q-list>
         </div>
@@ -78,6 +82,9 @@
 
 <script setup lang="ts">
 import { ref, inject } from 'vue'
+import { useI18n } from 'vue-i18n'
+
+const { t } = useI18n()
 
 // 改用 inject 接收共享狀態
 const leftDrawerOpen = inject('leftDrawerOpen', ref(false))

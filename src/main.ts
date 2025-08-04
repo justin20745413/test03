@@ -13,9 +13,13 @@ import '@quasar/extras/material-icons/material-icons.css'
 import 'quasar/dist/quasar.css'
 import './styles/quasar.scss'
 
+import i18n from './i18n/index'
+
 import App from './App.vue'
 
 const app = createApp(App)
+
+app.use(i18n)
 
 app.component('Swiper', Swiper)
 app.component('SwiperSlide', SwiperSlide)
