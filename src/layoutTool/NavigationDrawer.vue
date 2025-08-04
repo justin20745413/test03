@@ -20,6 +20,13 @@
                     <q-item-section>{{ t('navigation.navigation.products') }}</q-item-section>
                 </q-item>
 
+                <q-item clickable v-ripple to="/DeveloperIntro">
+                    <q-item-section avatar>
+                        <q-icon name="supervisor_account" />
+                    </q-item-section>
+                    <q-item-section>{{ t('navigation.navigation.DeveloperIntro') }}</q-item-section>
+                </q-item>
+
                 <q-separator class="q-my-md" />
 
                 <q-item-label header>Tools</q-item-label>

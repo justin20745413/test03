@@ -2,6 +2,7 @@ export default {
     navigation: {
         home: 'Home',
         products: 'Products',
+        DeveloperIntro: 'Developer Intro',
         fileupload: 'File Upload',
         spline1: '3D Model Application Products',
         splineBackground: '3D Model Application Background',

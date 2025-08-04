@@ -1,6 +1,7 @@
 import { createRouter, createWebHashHistory } from 'vue-router'
 import Home from '../views/Home.vue'
 import Products from '../views/Products.vue'
+import DeveloperIntro from '@/views/DeveloperIntro.vue'
 import fileupload from '../views/fileupload.vue'
 import PracticeArea from '../views/PracticeArea.vue'
 import Spline1 from '../views/Spline1.vue'
@@ -21,6 +22,11 @@ const router = createRouter({
             path: '/products',
             name: 'products',
             component: Products
+        },
+        {
+            path: '/DeveloperIntro',
+            name: 'DeveloperIntro',
+            component: DeveloperIntro
         },
         {
             path: '/fileupload',
